@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 16px;
+        background: #f9f9f9;
+      }
+      button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        margin-top: 12px;
+        font-size: 14px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      #translateBtn {
+        background-color: #007aff;
+        color: white;
+      }
+      #revertBtn {
+        background-color: #e0e0e0;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>AI Translator</h2>
+    <p>Selecciona un texto en Figma y haz clic:</p>
+    <button id="translateBtn">🔁 Traducir a español</button>
+    <button id="revertBtn">↩️ Revertir a original</button>
+
+    <script>
+      document.getElementById('translateBtn').onclick = () => {
+        parent.postMessage({ pluginMessage: { type: 'translate-text' } }, '*');
+      };
+
+      document.getElementById('revertBtn').onclick = () => {
+        parent.postMessage({ pluginMessage: { type: 'revert-text' } }, '*');
+      };
+    </script>
+  </body>
+</html>
