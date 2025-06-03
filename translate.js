@@ -42,7 +42,7 @@ figma.ui.onmessage = async (msg) => {
 
 async function fetchTranslationFromVercel(text) {
   try {
-    const res = await fetch("https://api-translate-livid.vercel.app", {
+    const res = await fetch("https://api-translate-livid.vercel.app/api/translate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
