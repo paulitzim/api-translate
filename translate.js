@@ -1,59 +1,49 @@
-/*
- * Figma Plugin: AI Translator (English → Spanish)
- * Now using Vercel backend proxy
- */
-
-figma.showUI(__html__, { width: 320, height: 400 });
-
-// Handle messages from the UI
-figma.ui.onmessage = async (msg) => {
-  if (msg.type === "translate-text") {
-    const selection = figma.currentPage.selection;
-
-    for (const node of selection) {
-      if (node.type === "TEXT") {
-        const original = node.characters;
-        node.setPluginData("originalText", original);
-
-        // Send to Vercel proxy
-        const translated = await fetchTranslationFromVercel(original);
-        node.characters = translated;
-      }
-    }
-
-    figma.notify("Translation applied");
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Only POST method is allowed' });
   }
 
-  if (msg.type === "revert-text") {
-    const selection = figma.currentPage.selection;
+  const { text } = req.body;
 
-    for (const node of selection) {
-      if (node.type === "TEXT") {
-        const originalText = node.getPluginData("originalText");
-        if (originalText) {
-          node.characters = originalText;
-        }
-      }
-    }
-
-    figma.notify("Reverted to original text");
+  if (!text || typeof text !== 'string') {
+    return res.status(400).json({ error: 'Missing or invalid \"text\" in body' });
   }
-};
 
-async function fetchTranslationFromVercel(text) {
   try {
-    const res = await fetch("https://api-translate-livid.vercel.app/api/translate", {
-      method: "POST",
+    const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json"
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
       },
-      body: JSON.stringify({ text })
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a UX content translator. Translate the following UI string from English to Spanish (LatAm), using a friendly and clear tone. Avoid literal translations. Do not translate brand names.'
+          },
+          {
+            role: 'user',
+            content: `Original: "${text}"`
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 100
+      })
     });
 
-    const data = await res.json();
-    return data.translatedText || text;
-  } catch (err) {
-    console.error("Translation failed", err);
-    return text;
+    const data = await openaiRes.json();
+
+    if (!data.choices || !data.choices[0]?.message?.content) {
+      return res.status(500).json({ error: 'Invalid response from OpenAI', data });
+    }
+
+    const translation = data.choices[0].message.content.trim();
+    res.status(200).json({ translatedText: translation });
+
+  } catch (error) {
+    console.error('OpenAI API error:', error);
+    res.status(500).json({ error: 'Translation failed', detail: error.message });
   }
 }
