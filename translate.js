@@ -1,46 +1,59 @@
-// File: api/translate.js (para Vercel)
+/*
+ * Figma Plugin: AI Translator (English → Spanish)
+ * Now using Vercel backend proxy
+ */
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+figma.showUI(__html__, { width: 320, height: 400 });
+
+// Handle messages from the UI
+figma.ui.onmessage = async (msg) => {
+  if (msg.type === "translate-text") {
+    const selection = figma.currentPage.selection;
+
+    for (const node of selection) {
+      if (node.type === "TEXT") {
+        const original = node.characters;
+        node.setPluginData("originalText", original);
+
+        // Send to Vercel proxy
+        const translated = await fetchTranslationFromVercel(original);
+        node.characters = translated;
+      }
+    }
+
+    figma.notify("Translation applied");
   }
 
-  const { text } = req.body;
+  if (msg.type === "revert-text") {
+    const selection = figma.currentPage.selection;
 
-  if (!text) {
-    return res.status(400).json({ error: 'Missing text to translate' });
+    for (const node of selection) {
+      if (node.type === "TEXT") {
+        const originalText = node.getPluginData("originalText");
+        if (originalText) {
+          node.characters = originalText;
+        }
+      }
+    }
+
+    figma.notify("Reverted to original text");
   }
+};
 
+async function fetchTranslationFromVercel(text) {
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
+    const res = await fetch("https://api-translate-livid.vercel.app", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a UX content translator. Translate the following UI string from English to Spanish (LatAm), using a friendly and clear tone. Avoid literal translations. Do not translate brand names.'
-          },
-          {
-            role: 'user',
-            content: `Original: "${text}"`
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 100
-      })
+      body: JSON.stringify({ text })
     });
 
-    const data = await response.json();
-    const translation = data.choices?.[0]?.message?.content?.trim();
-
-    res.status(200).json({ translatedText: translation });
+    const data = await res.json();
+    return data.translatedText || text;
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Translation failed' });
+    console.error("Translation failed", err);
+    return text;
   }
-} 
+}
