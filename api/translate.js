@@ -17,11 +17,24 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
-            content: 'You are a UX content translator. Translate the following UI string from English to Spanish (LatAm), using a friendly and clear tone. Avoid literal translations. Do not translate brand names.'
+            content: `You are a UX content translator. Translate the following UI string from English to Spanish, adapting the style to the given market.
+
+If the market is Panama:
+- Use simple, friendly, and direct language.
+- Favor common Latin American Spanish without regionalisms.
+- Use terms like "pagar la factura", "configurar tu cuenta".
+
+If the market is Puerto Rico:
+- Maintain a formal but approachable tone.
+- Use vocabulary familiar in Puerto Rico (e.g., "factura", not "recibo"; "servicio", not "plan").
+- Avoid overly neutral or continental expressions.
+
+Do not translate product or brand names. Prioritize clarity and a natural tone.`
+
           },
           {
             role: 'user',

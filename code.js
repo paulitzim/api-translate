@@ -5,7 +5,7 @@ const res = await fetch("https://api-translate-livid.vercel.app/api/translate", 
       "Authorization": "Bearer TU_API_KEY"
     },
     body: JSON.stringify({
-      model: "gpt-3.5-turbo", // o gpt-4 si tienes acceso
+      model: "gpt-4",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
