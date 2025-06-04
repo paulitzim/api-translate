@@ -1,33 +1,30 @@
 <!DOCTYPE html>
 <html>
   <body>
-    <h2>Traductor de contenido</h2>
-    <textarea id="text" placeholder="Enter English text" rows="4" cols="40"></textarea>
-    <br />
-    <label for="market">Market:</label>
-    <select id="market">
-      <option value="Panama">Panama</option>
-      <option value="Puerto Rico">Puerto Rico</option>
-    </select>
-    <br /><br />
-    <button id="translateBtn">Traducir</button>
-    <p id="output"></p>
-
+    <div id="original"></div>
+    <button id="translate">Traducir</button>
     <script>
-      document.getElementById('translateBtn').onclick = async () => {
-        const text = document.getElementById('text').value;
-        const market = document.getElementById('market').value;
+      let originalText = "";
 
-        const response = await fetch('https://api-translate-livid.vercel.app/api/translate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ text, market })
+      onmessage = (event) => {
+        if (event.data.pluginMessage.type === "TEXT_SELECTED") {
+          originalText = event.data.pluginMessage.text;
+          document.getElementById("original").innerText = originalText;
+        }
+      };
+
+      document.getElementById("translate").onclick = async () => {
+        const response = await fetch("https://api-translate-livid.vercel.app/api/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: originalText })
         });
 
         const data = await response.json();
-        document.getElementById('output').innerText = data.translatedText || 'Error: ' + data.error;
+        parent.postMessage(
+          { pluginMessage: { type: "TRANSLATED_TEXT", text: data.translatedText } },
+          "*"
+        );
       };
     </script>
   </body>
