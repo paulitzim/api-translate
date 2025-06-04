@@ -40,32 +40,41 @@ Original: "${text}"
 Market: ${market}
 `;
 
-  try {
-    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: prompt }
-            ]
-          }
-        ]
-      })
-    });
+    try {
+    const geminiRes = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + process.env.GEMINI_API_KEY,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: 'user',
+              parts: [{ text: `${prompt}\nOriginal: "${text}"\nMarket: ${market}` }]
+            }
+          ]
+        })
+      }
+    );
 
     const result = await geminiRes.json();
-    console.log("Gemini API response:", result);
-    
+    console.log("Respuesta completa de Gemini:", result);
+
     const translation = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
 
-    if (!translation) throw new Error("Missing translation from Gemini");
+    if (!translation) {
+      console.error("Falla al extraer traducción de:", result);
+      throw new Error("Missing translation from Gemini");
+    }
 
     return res.status(200).json({ translatedText: translation });
 
   } catch (error) {
-    console.error("Error:", error);
-    return res.status(500).json({ error: 'Translation failed', detail: error.message });
+    console.error("Falla en el handler:", error);
+    return res.status(500).json({
+      error: 'Translation failed',
+      detail: error.message || "Unknown error"
+    });
   }
+
 }
