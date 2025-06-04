@@ -56,6 +56,8 @@ Market: ${market}
     });
 
     const result = await geminiRes.json();
+    console.log("Gemini API response:", result);
+    
     const translation = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
 
     if (!translation) throw new Error("Missing translation from Gemini");
