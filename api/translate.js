@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // Manejo CORS
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -13,61 +12,51 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Only POST method is allowed' });
   }
 
-  const { text } = req.body;
+  const { text, market } = req.body;
 
   if (!text || typeof text !== 'string') {
     return res.status(400).json({ error: 'Missing or invalid "text" in body' });
   }
 
+  const systemPrompt = `
+You are a UX content translator that localizes user interface text from English to Spanish.
+
+If the market is Panama:
+- Use a friendly and direct tone.
+- Use Latin American standard expressions, avoiding regionalisms.
+- Prefer terms like: "pagar la factura", "configurar tu cuenta", "ver tus consumos", "soporte técnico", "activar tu servicio".
+- Keep the tone simple, close, and human, like the FAQs on https://www.liberty.com.pa/faqs.
+
+If the market is Puerto Rico:
+- Use a professional but warm tone.
+- Adapt to terms familiar in PR: "factura", "servicio", "equipo", "internet fijo", "televisión".
+- Reflect the tone used in https://www.libertypr.com/es/faqs-centro-de-ayuda: polite, reassuring, and helpful, avoiding neutral continental phrases.
+- Use proper conjugation like "puedes hacer esto", "encuéntralo aquí", "necesitas ayuda con tu cuenta".
+
+Never translate product names or brand names. Always favor clarity and a natural tone over literal translation.
+`;
+
   try {
-    const geminiRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + process.env.GEMINI_API_KEY, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `You are a UX content specialist for a telecom company translating UI strings from English to Spanish.
+    const response = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + process.env.GEMINI_API_KEY,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            { role: 'user', parts: [{ text: `${systemPrompt}\n\nTranslate this text to Spanish for the market "${market}": "${text}"` }] }
+          ]
+        })
+      }
+    );
 
-Apply tone and vocabulary depending on the market as follows:
+    const data = await response.json();
 
-**If the market is Panama:**
-- Use clear, simple, and helpful language.
-- Speak directly to the user using "tú".
-- Prioritize action-oriented verbs like "paga", "configura", "actualiza".
-- Avoid regionalisms or idioms. Use universal Latin American Spanish.
-- Maintain a warm but efficient tone, close to a helpful assistant.
-
-**If the market is Puerto Rico:**
-- Use formal but natural Spanish.
-- Speak directly to the user using "tú", but in a respectful way.
-- Use vocabulary and expressions familiar in Puerto Rico (e.g., "factura" instead of "recibo", "servicio" instead of "plan").
-- Keep answers complete but concise, without overexplaining.
-- Maintain a corporate yet friendly tone, like an expert advisor.
-
-**In all cases:**
-- Do not translate product names, brand names, or service names.
-- Translate only the actual content the user would see in the interface.
-- Prioritize natural phrasing over literal translation.
-- Keep the tone aligned with self-service digital flows (not legal, not salesy).
-
-Translate this string accordingly:
-
-Original: "${text}"`
-          }]
-        }]
-      })
-    });
-
-    const data = await geminiRes.json();
-
-    const translation = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-
-    if (!translation) {
-      return res.status(500).json({ error: 'Invalid response from Gemini', data });
+    if (!data.candidates || !data.candidates[0]?.content?.parts[0]?.text) {
+      return res.status(500).json({ error: 'Invalid response from Gemini API', data });
     }
 
+    const translation = data.candidates[0].content.parts[0].text.trim();
     res.status(200).json({ translatedText: translation });
 
   } catch (error) {
