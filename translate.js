@@ -42,7 +42,7 @@ async function fetchTranslationFromVercel(text) {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ text })
+    body: JSON.stringify({ text, market: "Panama" }) // o "Puerto Rico"
     });
 
     const data = await res.json();
