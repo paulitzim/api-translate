@@ -14,53 +14,54 @@ export default async function handler(req, res) {
 
   const { text, market } = req.body;
 
-  if (!text || typeof text !== 'string') {
-    return res.status(400).json({ error: 'Missing or invalid "text" in body' });
+  if (!text || typeof text !== 'string' || !market) {
+    return res.status(400).json({ error: 'Missing or invalid "text" or "market"' });
   }
 
   const systemPrompt = `
-You are a UX content translator that localizes user interface text from English to Spanish.
+You are a UX content translator that localizes UI strings from English to Spanish.
 
 If the market is Panama:
-- Use a friendly and direct tone.
-- Use Latin American standard expressions, avoiding regionalisms.
-- Prefer terms like: "pagar la factura", "configurar tu cuenta", "ver tus consumos", "soporte técnico", "activar tu servicio".
-- Keep the tone simple, close, and human, like the FAQs on https://www.liberty.com.pa/faqs.
+- Use friendly, direct language like in https://www.liberty.com.pa/faqs.
+- Say "pagar la factura", "configurar tu cuenta", "ver tus consumos", "activar tu servicio".
+- Be close and conversational.
 
 If the market is Puerto Rico:
-- Use a professional but warm tone.
-- Adapt to terms familiar in PR: "factura", "servicio", "equipo", "internet fijo", "televisión".
-- Reflect the tone used in https://www.libertypr.com/es/faqs-centro-de-ayuda: polite, reassuring, and helpful, avoiding neutral continental phrases.
-- Use proper conjugation like "puedes hacer esto", "encuéntralo aquí", "necesitas ayuda con tu cuenta".
+- Use warm, professional tone like in https://www.libertypr.com/es/faqs-centro-de-ayuda.
+- Say "factura", "servicio", "equipo", "internet fijo", "televisión".
+- Avoid overly neutral Spanish; prefer local familiarity.
 
-Never translate product names or brand names. Always favor clarity and a natural tone over literal translation.
+Never translate product or brand names. Aim for clarity and naturalness.
 `;
 
+  const prompt = `${systemPrompt}\n\nTranslate this text for the market "${market}": "${text}"`;
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`;
+
   try {
-    const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + process.env.GEMINI_API_KEY,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [
-            { role: 'user', parts: [{ text: `${systemPrompt}\n\nTranslate this text to Spanish for the market "${market}": "${text}"` }] }
-          ]
-        })
-      }
-    );
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: prompt }]
+          }
+        ]
+      })
+    });
 
     const data = await response.json();
 
-    if (!data.candidates || !data.candidates[0]?.content?.parts[0]?.text) {
+    if (!data?.candidates?.[0]?.content?.parts?.[0]?.text) {
       return res.status(500).json({ error: 'Invalid response from Gemini API', data });
     }
 
-    const translation = data.candidates[0].content.parts[0].text.trim();
-    res.status(200).json({ translatedText: translation });
-
-  } catch (error) {
-    console.error('Gemini API error:', error);
-    res.status(500).json({ error: 'Translation failed', detail: error.message });
+    const translatedText = data.candidates[0].content.parts[0].text.trim();
+    res.status(200).json({ translatedText });
+  } catch (err) {
+    console.error('Gemini API error:', err);
+    res.status(500).json({ error: 'Translation failed', detail: err.message });
   }
 }
