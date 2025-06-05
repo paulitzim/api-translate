@@ -1,4 +1,3 @@
-figma.showUI(__html__, { width: 300, height: 160 });
 
 figma.ui.onmessage = async (msg) => {
   const selection = figma.currentPage.selection;
