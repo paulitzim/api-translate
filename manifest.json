@@ -1,18 +1,12 @@
-const manifest = {
-  name: "LLA UX Translator",
-  id: "lla-ux-translator",
-  api: "1.0.0",
-  main: "code.js",
-  ui: "ui.html",
-  editorType: ["figma"],
-  relaunchButtons: [
-    {
-      command: "translate",
-      name: "Translate Text",
-      multipleSelection: true
-    }
+{
+  "name": "LLA UX Translator",
+  "id": "lla-ux-translator",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "menu": [
+    { "name": "Translate Text", "command": "translate" }
   ],
-  icon: "lla-logo.png"
-};
-
-export default manifest;
+  "editorType": ["figma"],
+  "icon": "lla-logo.png"
+}
