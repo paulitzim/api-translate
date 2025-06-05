@@ -8,5 +8,4 @@
     { "name": "Translate Text", "command": "translate" }
   ],
   "editorType": ["figma"],
-  "icon": "lla-logo.png"
 }
