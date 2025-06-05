@@ -1,4 +1,3 @@
-figma.showUI(__html__, { width: 320, height: 400 });
 
 figma.ui.onmessage = async (msg) => {
   if (msg.type === 'translate-text') {
