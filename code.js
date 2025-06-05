@@ -1,51 +1,46 @@
-// code.js
-
 async function translateSelectedText() {
   const selection = figma.currentPage.selection;
 
-  if (selection.length === 0 || selection[0].type !== "TEXT") {
-    figma.notify("Selecciona una capa de texto para traducir.");
+  if (selection.length === 0) {
+    figma.notify("Please select at least one text layer.");
     figma.closePlugin();
     return;
   }
 
-  const originalText = selection[0].characters;
-  console.log("Llamando a la API con texto seleccionado:", originalText);
+  const node = selection[0];
+
+  if (node.type !== "TEXT") {
+    figma.notify("Selected node is not a text layer.");
+    figma.closePlugin();
+    return;
+  }
+
+  const originalText = node.characters;
 
   try {
+    console.log("Sending to API:", originalText);
     const response = await fetch("https://api-translate-livid.vercel.app/api/translate", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         text: originalText,
-        market: "Panama" // o "Puerto Rico" si lo necesitas
+        market: "Panama" // change to "Puerto Rico" if needed
       })
     });
 
-    if (!response.ok) {
-      throw new Error(`Error del servidor: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
     const data = await response.json();
 
-    if (data && data.translatedText) {
-  const selection = figma.currentPage.selection;
+    if (!data?.translatedText) throw new Error("No translation returned from API.");
 
-  if (selection.length === 1 && selection[0].type === "TEXT") {
-    // 🔥 Cargar la fuente antes de modificar el texto
-    await figma.loadFontAsync(selection[0].fontName);
-    selection[0].characters = data.translatedText;
-    figma.notify("Texto traducido correctamente.");
-  } else {
-    figma.notify("Selecciona un solo nodo de texto.");
-  }
-}
-
+    // Load font before applying new text
+    await figma.loadFontAsync(node.fontName);
+    node.characters = data.translatedText;
+    figma.notify("Text translated successfully.");
   } catch (error) {
-    console.error("Error al traducir:", error);
-    figma.notify("Hubo un problema al traducir el texto.");
+    console.error("Translation error:", error);
+    figma.notify("There was an error during translation.");
   }
 
   figma.closePlugin();
