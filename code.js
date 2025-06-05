@@ -32,7 +32,7 @@ figma.ui.onmessage = async (msg) => {
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
         const data = await response.json();
-        if (!data?.translatedText) throw new Error("No translation returned from API.");
+        if (!data || !data.translatedText) throw new Error("No translation returned from API.");
 
         node.characters = data.translatedText;
       } catch (error) {
