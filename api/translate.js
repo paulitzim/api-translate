@@ -1,3 +1,6 @@
+console.log("Gemini API Key:", process.env.GEMINI_API_KEY);
+
+
 export const config = {
   api: {
     bodyParser: true,
