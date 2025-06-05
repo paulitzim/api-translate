@@ -1,59 +1,65 @@
-async function translateSelectedText(market = "Panama") {
+figma.showUI(__html__, { width: 300, height: 160 });
+
+figma.ui.onmessage = async (msg) => {
   const selection = figma.currentPage.selection;
 
   if (selection.length === 0) {
     figma.notify("Please select at least one text layer.");
-    figma.closePlugin();
     return;
   }
 
-  const node = selection[0];
+  if (msg.type === "translate") {
+    for (const node of selection) {
+      if (node.type !== "TEXT") continue;
 
-  if (node.type !== "TEXT") {
-    figma.notify("Selected node is not a text layer.");
-    figma.closePlugin();
-    return;
+      const originalText = node.characters;
+
+      try {
+        await figma.loadFontAsync(node.fontName);
+
+        // Save original text in pluginData for rollback
+        await node.setPluginData("originalText", originalText);
+
+        const response = await fetch("https://api-translate-livid.vercel.app/api/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: originalText,
+            market: msg.market || "Panama",
+          }),
+        });
+
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+        const data = await response.json();
+        if (!data?.translatedText) throw new Error("No translation returned from API.");
+
+        node.characters = data.translatedText;
+      } catch (error) {
+        console.error("Translation error:", error);
+        figma.notify("Error while translating one or more layers.");
+      }
+    }
+
+    figma.notify("Translation complete.");
   }
 
-  const originalText = node.characters;
+  if (msg.type === "rollback") {
+    for (const node of selection) {
+      if (node.type !== "TEXT") continue;
 
-  try {
-    console.log("Sending to API:", originalText);
-    const response = await fetch("https://api-translate-livid.vercel.app/api/translate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        text: originalText,
-        market: market,
-      })
-    });
+      try {
+        const savedText = node.getPluginData("originalText");
+        if (savedText) {
+          await figma.loadFontAsync(node.fontName);
+          node.characters = savedText;
+        }
+      } catch (error) {
+        console.error("Rollback error:", error);
+        figma.notify("Error during rollback.");
+      }
+    }
 
-    if (!response.ok) throw new Error(`Server error: ${response.status}`);
-
-    const data = await response.json();
-
-    if (!data?.translatedText) throw new Error("No translation returned from API.");
-
-    // Load font before applying new text
-    await figma.loadFontAsync(node.fontName);
-    node.characters = data.translatedText;
-    figma.notify("Text translated successfully.");
-  } catch (error) {
-    console.error("Translation error:", error);
-    figma.notify("There was an error during translation.");
-  }
-
-  figma.closePlugin();
-}
-
-figma.showUI(__html__);
-
-figma.ui.onmessage = async (msg) => {
-  if (msg.type === 'translate-selected') {
-    await translateSelectedText(msg.market);
-  }
-
-  if (msg.type === 'rollback') {
-    // Aún no hemos definido esta parte
+    figma.notify("Rollback complete.");
   }
 };
