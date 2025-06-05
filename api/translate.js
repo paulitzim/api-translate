@@ -44,29 +44,22 @@ Market: ${market}
 `;
 
     try {
-    const geminiRes = await fetch(''https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent'=' + process.env.GEMINI_API_KEY, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: 'user',
-              parts: [{ text: `${prompt}\nOriginal: "${text}"\nMarket: ${market}` }]
-            }
-          ]
-        })
-      }
-    );
+    const geminiRes = await fetch('https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=' + process.env.GEMINI_API_KEY, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    contents: [{
+      role: 'user',
+      parts: [{ text: prompt + `\nOriginal: "${text}"\nMarket: ${market}` }]
+    }]
+  })
+});
 
     const result = await geminiRes.json();
-    console.log("Respuesta completa de Gemini:", result);
+const translation = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
 
-    const translation = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+if (!translation) throw new Error("Missing translation from Gemini");
 
-    if (!translation) {
-  console.error("Gemini response:", result);
-  throw new Error("Missing translation from Gemini");
-}
 
     return res.status(200).json({ translatedText: translation });
 
