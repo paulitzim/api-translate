@@ -66,9 +66,9 @@ Market: ${market}
     const translation = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
 
     if (!translation) {
-      console.error("Falla al extraer traducción de:", result);
-      throw new Error("Missing translation from Gemini");
-    }
+  console.error("Gemini response:", result);
+  throw new Error("Missing translation from Gemini");
+}
 
     return res.status(200).json({ translatedText: translation });
 
