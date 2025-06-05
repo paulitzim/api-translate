@@ -1,5 +1,7 @@
 // code.js
 
+console.log("Llamando a la API con texto seleccionado:", originalText);
+
 async function translateSelectedText() {
   const selection = figma.currentPage.selection;
 
