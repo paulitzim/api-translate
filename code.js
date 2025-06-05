@@ -1,4 +1,4 @@
-async function translateSelectedText() {
+async function translateSelectedText(market = "Panama") {
   const selection = figma.currentPage.selection;
 
   if (selection.length === 0) {
@@ -24,7 +24,7 @@ async function translateSelectedText() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         text: originalText,
-        market: "Panama" // change to "Puerto Rico" if needed
+        market: market,
       })
     });
 
@@ -46,4 +46,14 @@ async function translateSelectedText() {
   figma.closePlugin();
 }
 
-translateSelectedText();
+figma.showUI(__html__);
+
+figma.ui.onmessage = async (msg) => {
+  if (msg.type === 'translate-selected') {
+    await translateSelectedText(msg.market);
+  }
+
+  if (msg.type === 'rollback') {
+    // Aún no hemos definido esta parte
+  }
+};

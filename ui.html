@@ -1,54 +1,39 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <style>
-      body {
-        font-family: Inter, sans-serif;
-        margin: 24px;
-        width: 240px;
-      }
-      button {
-        margin-top: 16px;
-        padding: 8px;
-        width: 100%;
-        font-size: 14px;
-        background-color: #981d97;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-      }
-      select, textarea {
-        width: 100%;
-        margin-top: 8px;
-        padding: 6px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-        font-size: 14px;
-      }
-    </style>
-  </head>
-  <body>
-    <h3>Traductor UX</h3>
-    <label for="market">Selecciona el mercado:</label>
-    <select id="market">
-      <option value="Panama">Panamá</option>
-      <option value="Puerto Rico">Puerto Rico</option>
-    </select>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 16px;
+      width: 240px;
+    }
+    label, select, button {
+      display: block;
+      margin-bottom: 12px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <label for="market">Select market:</label>
+  <select id="market">
+    <option value="Panama">Panama</option>
+    <option value="Puerto Rico">Puerto Rico</option>
+  </select>
 
-    <label for="text">Texto original:</label>
-    <textarea id="text" rows="4"></textarea>
+  <button id="translate">Translate</button>
+  <button id="rollback">Rollback</button>
 
-    <button id="translate">Traducir y aplicar</button>
+  <script>
+    document.getElementById("translate").onclick = () => {
+      const market = document.getElementById("market").value;
+      parent.postMessage({ pluginMessage: { type: 'translate-selected', market } }, '*');
+    };
 
-    <script>
-      document.getElementById("translate").onclick = () => {
-        const text = document.getElementById("text").value;
-        const market = document.getElementById("market").value;
-
-        parent.postMessage({ pluginMessage: { type: "translate", text, market } }, "*");
-      };
-    </script>
-  </body>
+    document.getElementById("rollback").onclick = () => {
+      parent.postMessage({ pluginMessage: { type: 'rollback' } }, '*');
+    };
+  </script>
+</body>
 </html>
