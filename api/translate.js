@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing "text" or "market"' });
   }
 
-  const prompt = `
+const prompt = `
 You are a UX content translator specialized in telecom apps and websites. Translate the following UI string from English to Spanish, adapting the style and tone to the specified market.
 
 If the market is Panama:
@@ -37,7 +37,9 @@ If the market is Puerto Rico:
 - Prefer "servicio" over "plan", "configura tu cuenta" instead of "ajusta tu perfil".
 - Avoid over-neutral or Spain-style phrasing.
 
-Do not translate product or brand names. Return only the final translated string.
+Do not translate product or brand names.
+Keep the translated text concise so that it fits within ${width} pixels of horizontal space.
+Return only the final translated string.
 
 Original: "${text}"
 Market: ${market}
