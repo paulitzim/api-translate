@@ -1,6 +1,6 @@
 {
-  "name": "UX Translator",
-  "id": "translate-ui-plugin",
+  "name": "LLA UX Translator",
+  "id": "com.lla.ux-translator",
   "api": "1.0.0",
   "main": "code.js",
   "ui": "ui.html",
