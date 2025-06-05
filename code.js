@@ -1,3 +1,6 @@
+res.setHeader('Access-Control-Allow-Origin', '*');
+res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
 figma.showUI(__html__, { width: 300, height: 160 });
 
 figma.ui.onmessage = async (msg) => {
