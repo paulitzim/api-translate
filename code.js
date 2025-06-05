@@ -31,11 +31,18 @@ async function translateSelectedText() {
     const data = await response.json();
 
     if (data && data.translatedText) {
-      selection[0].characters = data.translatedText;
-      figma.notify("Texto traducido correctamente.");
-    } else {
-      throw new Error("Respuesta inesperada del servidor.");
-    }
+  const selection = figma.currentPage.selection;
+
+  if (selection.length === 1 && selection[0].type === "TEXT") {
+    // 🔥 Cargar la fuente antes de modificar el texto
+    await figma.loadFontAsync(selection[0].fontName);
+    selection[0].characters = data.translatedText;
+    figma.notify("Texto traducido correctamente.");
+  } else {
+    figma.notify("Selecciona un solo nodo de texto.");
+  }
+}
+
   } catch (error) {
     console.error("Error al traducir:", error);
     figma.notify("Hubo un problema al traducir el texto.");
