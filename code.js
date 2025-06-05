@@ -1,7 +1,5 @@
 // code.js
 
-console.log("Llamando a la API con texto seleccionado:", originalText);
-
 async function translateSelectedText() {
   const selection = figma.currentPage.selection;
 
@@ -12,6 +10,7 @@ async function translateSelectedText() {
   }
 
   const originalText = selection[0].characters;
+  console.log("Llamando a la API con texto seleccionado:", originalText);
 
   try {
     const response = await fetch("https://api-translate-livid.vercel.app/api/translate", {
