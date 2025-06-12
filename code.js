@@ -1,5 +1,3 @@
-// code.js - Traducción automática de todas las capas de texto visibles
-
 figma.showUI(__html__, { width: 300, height: 200 });
 
 figma.ui.onmessage = async (msg) => {
@@ -27,8 +25,8 @@ figma.ui.onmessage = async (msg) => {
     for (const node of allTextNodes) {
       try {
         await figma.loadFontAsync(node.fontName);
-
         const originalText = node.characters;
+
         const response = await fetch("https://api-translate-livid.vercel.app/api/translate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -38,10 +36,21 @@ figma.ui.onmessage = async (msg) => {
         if (!response.ok) continue;
 
         const data = await response.json();
-        if (!data?.translatedText) continue;
+
+        let translated = null;
+        if (
+          data &&
+          typeof data === "object" &&
+          "translatedText" in data &&
+          typeof data.translatedText === "string"
+        ) {
+          translated = data.translatedText;
+        }
+
+        if (!translated) continue;
 
         await node.setPluginData("originalText", originalText);
-        node.characters = data.translatedText;
+        node.characters = translated;
       } catch (err) {
         console.warn("Error processing node:", err);
       }
@@ -50,4 +59,4 @@ figma.ui.onmessage = async (msg) => {
     figma.notify("All visible text layers translated.");
     figma.closePlugin();
   }
-}
+};
