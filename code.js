@@ -4,6 +4,7 @@ figma.ui.onmessage = async (msg) => {
   if (msg.type === "translate-all") {
     const market = msg.market || "Panama";
 
+    
     const allTextNodes = [];
 
     function findTextNodes(node) {
@@ -26,6 +27,8 @@ figma.ui.onmessage = async (msg) => {
       try {
         await figma.loadFontAsync(node.fontName);
         const originalText = node.characters;
+        if (!originalText || originalText.trim() === "") continue;
+
 
         const response = await fetch("https://api-translate-livid.vercel.app/api/translate", {
           method: "POST",
