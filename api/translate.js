@@ -18,6 +18,7 @@ export default async function handler(req, res) {
 
   if (!text || typeof text !== "string" || !market) {
     return res.status(400).json({ error: 'Missing "text" or "market"' });
+    console.log("❗️Request body validation failed:", { text, market });
   }
 
   const prompt = `
@@ -86,6 +87,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ translatedText: translation });
   } catch (error) {
     console.error("Falla en el handler:", error);
+    console.error("❌ Server error:", error);
     return res.status(500).json({
       error: "Translation failed",
       detail: error.message || "Unknown error",
