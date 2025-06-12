@@ -14,59 +14,48 @@
     h2 {
       font-size: 16px;
       color: #333;
-      margin-top: 0;
-      margin-bottom: 8px;
+      margin-top: 8px;
+      margin-bottom: 12px;
     }
     img.logo {
       margin-bottom: 12px;
     }
-    p.description {
-      margin: 8px;
-      font-size: 12px;
-      color: #666;
-    }
-    label, select {
-      font-size: 12px;
-    }
-    select {
-      padding: 6px 10px;
-      margin-top: 4px;
-      margin-bottom: 16px;
+    select, button {
+      padding: 8px 12px;
+      margin-top: 12px;
+      font-size: 14px;
       border-radius: 4px;
       border: 1px solid #ccc;
-      font-family: inherit;
     }
     button {
-      padding: 8px 12px;
       background: #ff4100;
       color: white;
       border: none;
-      border-radius: 4px;
       cursor: pointer;
     }
     button:hover {
       background: #7c167b;
     }
+    p {
+      font-size: 12px;
+      color: #666;
+      margin-top: 8px;
+    }
   </style>
 </head>
 <body>
-  <div style="text-align: center; margin-bottom: 12px;">
+  <div style="text-align: center;">
     <img src="https://lla.com/sites/default/files/newlibertylogo.png" alt="LLA Logo" class="logo" style="width: auto; max-height: 93px;" />
     <h2>LLA UX Translator</h2>
-  </div>
+    <p>This plugin helps UX writers and designers translate interface copy from English to Spanish, adapting tone and vocabulary to specific Liberty Latin America markets.</p>
 
-  <div style="text-align: center;">
-    <p class="description">
-      This plugin helps UX writers and designers translate interface copy from English to Spanish, adapting tone and vocabulary to specific Liberty Latin America markets like Panama or Puerto Rico.
-    </p>
-
-    <label for="market-select">Select market:</label><br/>
+    <label for="market-select" style="font-size: 12px; color: #333;">Select Market:</label><br />
     <select id="market-select">
       <option value="Panama">Panama</option>
       <option value="Puerto Rico">Puerto Rico</option>
     </select>
-    <br />
 
+    <br />
     <button id="translate-btn">Translate Selection</button>
   </div>
 
