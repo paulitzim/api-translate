@@ -1,43 +1,32 @@
-figma.showUI(__html__, { width: 320, height: 280 });
+// code.js
+figma.showUI(__html__, { width: 320, height: 220 });
 
 figma.ui.onmessage = async (msg) => {
-  if (msg.type === 'translate') {
-    const market = msg.market;
+  if (msg.type === "translate-text") {
+    const market = msg.market || "Puerto Rico"; // Default fallback
     const selection = figma.currentPage.selection;
 
-    if (selection.length === 0) {
-      figma.notify("Please select at least one text layer.");
+    if (!selection.length) {
+      figma.notify("Please select at least one text node.");
       return;
     }
 
     for (const node of selection) {
       if (node.type !== "TEXT") {
-        figma.notify("One or more selected nodes are not text layers.");
+        figma.notify("All selected nodes must be text layers.");
         continue;
       }
 
-      const originalText = node.characters;
+      const original = node.characters;
+      const fontName = node.fontName;
 
       try {
-        const response = await fetch("https://api-translate-livid.vercel.app/api/translate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            text: originalText,
-            market: market
-          })
-        });
-
-        if (!response.ok) throw new Error(`Server error: ${response.status}`);
-        const data = await response.json();
-
-        if (!data?.translatedText) throw new Error("No translation returned from API.");
-
-        await figma.loadFontAsync(node.fontName);
-        node.characters = data.translatedText;
-
+        const translated = await fetchTranslationFromVercel(original, market);
+        await figma.loadFontAsync(fontName);
+        await node.setPluginData("originalText", original); // rollback support
+        node.characters = translated;
       } catch (error) {
-        console.error("Translation error:", error);
+        console.error("Translation failed:", error);
         figma.notify("Error during translation.");
       }
     }
@@ -45,3 +34,19 @@ figma.ui.onmessage = async (msg) => {
     figma.notify("Translation complete.");
   }
 };
+
+async function fetchTranslationFromVercel(text, market) {
+  try {
+    const res = await fetch("https://api-translate-livid.vercel.app/api/translate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, market })
+    });
+
+    const data = await res.json();
+    return data.translatedText || text;
+  } catch (err) {
+    console.error("Translation failed", err);
+    return text;
+  }
+}
