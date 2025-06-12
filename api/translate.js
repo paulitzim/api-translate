@@ -68,7 +68,18 @@ export default async function handler(req, res) {
     const result = await geminiRes.json();
     console.log("Respuesta completa de Gemini:", JSON.stringify(result, null, 2));
 
-    const translation = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+  let translation = null;
+  if (
+    result &&
+    result.candidates &&
+    result.candidates[0] &&
+    result.candidates[0].content &&
+    result.candidates[0].content.parts &&
+    result.candidates[0].content.parts[0] &&
+    result.candidates[0].content.parts[0].text
+  ) {
+    translation = result.candidates[0].content.parts[0].text.trim();
+  }
 
     if (!translation) throw new Error("Missing translation from Gemini");
 
