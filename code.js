@@ -26,7 +26,7 @@ figma.ui.onmessage = async (msg) => {
 
         const data = await response.json();
 
-        if (!data?.translatedText) throw new Error("No translation returned from API.");
+      if (!data || !data.translatedText) throw new Error("No translation returned from API.");
 
         await figma.loadFontAsync(node.fontName);
         node.characters = data.translatedText;
