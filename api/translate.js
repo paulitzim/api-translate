@@ -21,27 +21,31 @@ export default async function handler(req, res) {
   }
 
   const prompt = `
-You are a UX content translator specialized in telecom apps and websites. Translate the following UI string from English to Spanish, adapting the style and tone to the specified market.
+  You are a UX content translator specialized in telecom apps and websites. Translate the following UI string from English to Spanish, adapting the style and tone to the specified market.
 
-If the market is Panama:
-- Use simple, clear and warm language.
-- Avoid regionalisms. Keep it pan-Latin American.
-- Use phrases like "pagar la factura", "configurar tu cuenta", "métodos de pago".
-- Reflect the tone used in the Liberty Panama FAQs.
+  If the market is Panama:
+  - Use simple, clear and warm language.
+  - Avoid regionalisms. Keep it pan-Latin American.
+  - Use phrases like "pagar la factura", "configurar tu cuenta", "métodos de pago".
+  - Reflect the tone used in the Liberty Panama FAQs.
 
-If the market is Puerto Rico:
-- Use formal but friendly tone.
-- Reflect Puerto Rican vocabulary and expressions from the Liberty Puerto Rico help center.
-- Prefer "servicio" over "plan", "configura tu cuenta" instead of "ajusta tu perfil".
-- Avoid over-neutral or Spain-style phrasing.
+  If the market is Puerto Rico:
+  - Use formal but friendly tone.
+  - Use terminology aligned with the Liberty Puerto Rico writing guidelines:
+    - Use "servicio" instead of "plan".
+    - Prefer "configura tu cuenta" over "ajusta tu perfil".
+    - Avoid Spain-style expressions and overly neutral phrasing.
+    - Use vocabulary aligned with customer support documentation and avoid ambiguity.
+  - Prioritize clarity, trust, and consistency.
 
-Do not translate product or brand names.
-Keep the translated text concise so that it fits within ${width || 300} pixels of horizontal space.
-Return only the final translated string.
+  Do not translate product or brand names.
+  Keep the translated text concise so that it fits within ${width || 300} pixels of horizontal space.
+  Return only the final translated string.
 
-Original: "${text}"
-Market: ${market}
-`;
+  Original: "${text}"
+  Market: ${market}"
+  `;
+
 
   try {
     const geminiRes = await fetch(
