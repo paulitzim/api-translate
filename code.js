@@ -2,7 +2,6 @@ figma.showUI(__html__, { width: 300, height: 300 });
 
 figma.ui.onmessage = async (msg) => {
   if (msg.type === 'translate') {
-    const market = msg.market || 'Panama'; // default fallback
 
   if (selection.length === 0) {
     figma.notify("Please select at least one text layer.");
@@ -44,4 +43,5 @@ figma.ui.onmessage = async (msg) => {
 
     figma.notify("Translation complete.");
   }
-};
+}
+}
