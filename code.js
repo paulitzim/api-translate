@@ -1,41 +1,53 @@
-figma.showUI(__html__);
+// code.js - Traducción automática de todas las capas de texto visibles
+
+figma.showUI(__html__, { width: 300, height: 200 });
 
 figma.ui.onmessage = async (msg) => {
-  if (msg.type === 'translate') {
-    const selection = figma.currentPage.selection;
+  if (msg.type === "translate-all") {
+    const market = msg.market || "Panama";
 
-    if (selection.length === 0) {
-      figma.notify("Please select at least one text layer.");
-      return;
-    }
+    const allTextNodes = [];
 
-    for (const node of selection) {
-      if (node.type !== "TEXT") continue;
-
-      const originalText = node.characters;
-
-      try {
-        const response = await fetch("https://api-translate-livid.vercel.app/api/translate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            text: originalText,
-            market: msg.market
-          })
-        });
-
-        const data = await response.json();
-
-      if (!data || !data.translatedText) throw new Error("No translation returned from API.");
-
-        await figma.loadFontAsync(node.fontName);
-        node.characters = data.translatedText;
-      } catch (error) {
-        console.error("Translation error:", error);
-        figma.notify("Error translating one or more texts.");
+    function findTextNodes(node) {
+      if (node.type === "TEXT") {
+        allTextNodes.push(node);
+      } else if ("children" in node) {
+        for (const child of node.children) {
+          findTextNodes(child);
+        }
       }
     }
 
-    figma.notify("Translation completed.");
+    for (const page of figma.root.children) {
+      for (const node of page.children) {
+        findTextNodes(node);
+      }
+    }
+
+    for (const node of allTextNodes) {
+      try {
+        await figma.loadFontAsync(node.fontName);
+
+        const originalText = node.characters;
+        const response = await fetch("https://api-translate-livid.vercel.app/api/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: originalText, market })
+        });
+
+        if (!response.ok) continue;
+
+        const data = await response.json();
+        if (!data?.translatedText) continue;
+
+        await node.setPluginData("originalText", originalText);
+        node.characters = data.translatedText;
+      } catch (err) {
+        console.warn("Error processing node:", err);
+      }
+    }
+
+    figma.notify("All visible text layers translated.");
+    figma.closePlugin();
   }
-};
+}

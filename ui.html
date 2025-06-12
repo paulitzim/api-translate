@@ -12,57 +12,65 @@
       margin-bottom: 4px;
     }
     h2 {
-      font-size: 16px;
-      color: #333;
-      margin-top: 8px;
-      margin-bottom: 12px;
+      font-size: 12px;
+      color: #666;
+      margin-top: 0;
+      margin-bottom: 16px;
     }
     img.logo {
       margin-bottom: 12px;
     }
-    select, button {
-      padding: 8px 12px;
-      margin-top: 12px;
-      font-size: 14px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
     button {
+      padding: 8px 12px;
       background: #ff4100;
       color: white;
       border: none;
+      border-radius: 4px;
       cursor: pointer;
+      margin: 8px 0;
     }
     button:hover {
       background: #7c167b;
     }
-    p {
-      font-size: 12px;
-      color: #666;
+    select {
+      padding: 6px;
       margin-top: 8px;
+      margin-bottom: 16px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
 <body>
-  <div style="text-align: center;">
-    <img src="https://lla.com/sites/default/files/newlibertylogo.png" alt="LLA Logo" class="logo" style="width: auto; max-height: 93px;" />
-    <h2>LLA UX Translator</h2>
-    <p>This plugin helps UX writers and designers translate interface copy from English to Spanish, adapting tone and vocabulary to specific Liberty Latin America markets.</p>
+  <div style="text-align: center; margin-bottom: 12px;">
+    <img src="https://lla.com/sites/default/files/newlibertylogo.png" alt="LLA Logo" style="width: auto; max-height: 93px;" />
+    <h2 style="font-family: Inter, sans-serif; font-size: 16px; margin-top: 8px;">LLA UX Translator</h2>
+  </div>
 
-    <label for="market-select" style="font-size: 12px; color: #333;">Select Market:</label><br />
-    <select id="market-select">
+  <p style="margin: 8px; font-size: 12px; color: #666;">
+    This plugin helps UX writers and designers translate interface copy from English to Spanish, adapting tone and vocabulary to specific Liberty Latin America markets like Panama or Puerto Rico.
+  </p>
+
+  <div style="text-align: center;">
+    <label for="market">Choose your market:</label><br />
+    <select id="market">
       <option value="Panama">Panama</option>
       <option value="Puerto Rico">Puerto Rico</option>
-    </select>
+    </select><br />
 
-    <br />
     <button id="translate-btn">Translate Selection</button>
+    <button id="translate-all-btn">Translate Entire File</button>
   </div>
 
   <script>
     document.getElementById('translate-btn').onclick = () => {
-      const market = document.getElementById('market-select').value;
+      const market = document.getElementById('market').value;
       parent.postMessage({ pluginMessage: { type: 'translate', market } }, '*');
+    };
+
+    document.getElementById('translate-all-btn').onclick = () => {
+      const market = document.getElementById('market').value;
+      parent.postMessage({ pluginMessage: { type: 'translate-all', market } }, '*');
     };
   </script>
 </body>
