@@ -1,7 +1,8 @@
 figma.showUI(__html__, { width: 300, height: 300 });
 
 figma.ui.onmessage = async (msg) => {
-  const selection = figma.currentPage.selection;
+  if (msg.type === 'translate') {
+    const market = msg.market || 'Panama'; // default fallback
 
   if (selection.length === 0) {
     figma.notify("Please select at least one text layer.");
@@ -42,24 +43,5 @@ figma.ui.onmessage = async (msg) => {
     }
 
     figma.notify("Translation complete.");
-  }
-
-  if (msg.type === "rollback") {
-    for (const node of selection) {
-      if (node.type !== "TEXT") continue;
-
-      try {
-        const savedText = node.getPluginData("originalText");
-        if (savedText) {
-          await figma.loadFontAsync(node.fontName);
-          node.characters = savedText;
-        }
-      } catch (error) {
-        console.error("Rollback error:", error);
-        figma.notify("Error during rollback.");
-      }
-    }
-
-    figma.notify("Rollback complete.");
   }
 };

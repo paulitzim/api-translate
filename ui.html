@@ -12,13 +12,29 @@
       margin-bottom: 4px;
     }
     h2 {
-      font-size: 12px;
-      color: #666;
+      font-size: 16px;
+      color: #333;
       margin-top: 0;
-      margin-bottom: 16px;
+      margin-bottom: 8px;
     }
     img.logo {
       margin-bottom: 12px;
+    }
+    p.description {
+      margin: 8px;
+      font-size: 12px;
+      color: #666;
+    }
+    label, select {
+      font-size: 12px;
+    }
+    select {
+      padding: 6px 10px;
+      margin-top: 4px;
+      margin-bottom: 16px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-family: inherit;
     }
     button {
       padding: 8px 12px;
@@ -34,20 +50,30 @@
   </style>
 </head>
 <body>
-<div style="text-align: center; margin-bottom: 12px;">
-  <img src="https://lla.com/sites/default/files/newlibertylogo.png" alt="LLA Logo" style="width: auto; max-height: 93px;" />
-  <h2 style="font-family: Inter, sans-serif; font-size: 16px; margin-top: 8px;">LLA UX Translator</h2>
-</div>
-<div style="text-align: center;">
-  <p style="margin: 8px; font-size: 12px; color: #666;">
-This plugin helps UX writers and designers translate interface copy from English to Spanish, adapting tone and vocabulary to specific Liberty Latin America markets like Panama or Puerto Rico.
-</p>
+  <div style="text-align: center; margin-bottom: 12px;">
+    <img src="https://lla.com/sites/default/files/newlibertylogo.png" alt="LLA Logo" class="logo" style="width: auto; max-height: 93px;" />
+    <h2>LLA UX Translator</h2>
+  </div>
 
-  <button id="translate-btn">Translate Selection</button>
-</div>
+  <div style="text-align: center;">
+    <p class="description">
+      This plugin helps UX writers and designers translate interface copy from English to Spanish, adapting tone and vocabulary to specific Liberty Latin America markets like Panama or Puerto Rico.
+    </p>
+
+    <label for="market-select">Select market:</label><br/>
+    <select id="market-select">
+      <option value="Panama">Panama</option>
+      <option value="Puerto Rico">Puerto Rico</option>
+    </select>
+    <br />
+
+    <button id="translate-btn">Translate Selection</button>
+  </div>
+
   <script>
     document.getElementById('translate-btn').onclick = () => {
-      parent.postMessage({ pluginMessage: { type: 'translate' } }, '*');
+      const market = document.getElementById('market-select').value;
+      parent.postMessage({ pluginMessage: { type: 'translate', market } }, '*');
     };
   </script>
 </body>
