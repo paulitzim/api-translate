@@ -31,6 +31,7 @@ export default async function handler(req, res) {
 
   If the market is Puerto Rico:
   - Use formal but friendly tone.
+  - Use second-person singular ("tú") instead of formal "usted".
   - Use terminology aligned with the Liberty Puerto Rico writing guidelines:
     - Use "servicio" instead of "plan".
     - Prefer "configura tu cuenta" over "ajusta tu perfil".
