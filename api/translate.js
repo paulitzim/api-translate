@@ -14,11 +14,23 @@ export default async function handler(req, res) {
     return res.status(200).end(); // Preflight OK
   }
 
+  // Validate request method
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  // Check if API key exists
+  if (!process.env.GEMINI_API_KEY) {
+    console.error("❌ Missing GEMINI_API_KEY environment variable");
+    return res.status(500).json({ error: "Server configuration error" });
+  }
+
   const { text, market, width } = req.body;
 
+  // Validate input - fix console.log placement
   if (!text || typeof text !== "string" || !market) {
-    return res.status(400).json({ error: 'Missing "text" or "market"' });
     console.log("❗️Request body validation failed:", { text, market });
+    return res.status(400).json({ error: 'Missing "text" or "market"' });
   }
 
   const prompt = `
@@ -48,8 +60,9 @@ export default async function handler(req, res) {
   Market: ${market}"
   `;
 
-
   try {
+    console.log("🔄 Making request to Gemini API...");
+    
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
@@ -66,31 +79,62 @@ export default async function handler(req, res) {
       }
     );
 
+    // Check if the response is ok
+    if (!geminiRes.ok) {
+      const errorText = await geminiRes.text();
+      console.error("❌ Gemini API error:", geminiRes.status, errorText);
+      
+      if (geminiRes.status === 429) {
+        return res.status(429).json({ error: "Rate limit exceeded. Please try again later." });
+      }
+      
+      return res.status(500).json({ 
+        error: "Translation service unavailable",
+        detail: `API returned ${geminiRes.status}` 
+      });
+    }
+
     const result = await geminiRes.json();
-    console.log("Respuesta completa de Gemini:", JSON.stringify(result, null, 2));
+    console.log("✅ Gemini response received");
 
-  let translation = null;
-  if (
-    result &&
-    result.candidates &&
-    result.candidates[0] &&
-    result.candidates[0].content &&
-    result.candidates[0].content.parts &&
-    result.candidates[0].content.parts[0] &&
-    result.candidates[0].content.parts[0].text
-  ) {
-    translation = result.candidates[0].content.parts[0].text.trim();
-  }
+    // Extract translation with better error handling
+    let translation = null;
+    try {
+      if (
+        result?.candidates?.[0]?.content?.parts?.[0]?.text
+      ) {
+        translation = result.candidates[0].content.parts[0].text.trim();
+      }
+    } catch (parseError) {
+      console.error("❌ Error parsing Gemini response:", parseError);
+      console.log("Raw response:", JSON.stringify(result, null, 2));
+    }
 
-    if (!translation) throw new Error("Missing translation from Gemini");
+    if (!translation) {
+      console.error("❌ No translation found in response:", JSON.stringify(result, null, 2));
+      return res.status(500).json({ 
+        error: "Translation failed", 
+        detail: "No translation returned from service" 
+      });
+    }
 
+    console.log("✅ Translation successful:", translation);
     return res.status(200).json({ translatedText: translation });
+
   } catch (error) {
-    console.error("Falla en el handler:", error);
-    console.error("❌ Server error:", error);
+    console.error("❌ Handler error:", error);
+    
+    // Handle specific error types
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return res.status(500).json({
+        error: "Network error",
+        detail: "Unable to reach translation service"
+      });
+    }
+    
     return res.status(500).json({
       error: "Translation failed",
-      detail: error.message || "Unknown error",
+      detail: error.message || "Unknown server error",
     });
   }
 }
