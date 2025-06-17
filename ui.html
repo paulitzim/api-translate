@@ -159,6 +159,12 @@
       border: 1px solid #FFAB00;
     }
 
+    .status.progress {
+      background: rgba(24, 160, 251, 0.1);
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+    }
+
     .error-details {
       margin-top: 8px;
       font-size: 12px;
@@ -218,53 +224,71 @@
   </div>
 
   <script>
-    const translateBtn = document.getElementById('translate-btn');
-    const statusDiv = document.getElementById('status');
+    document.addEventListener('DOMContentLoaded', () => {
+      const translateBtn = document.getElementById('translate-btn');
+      const marketSelect = document.getElementById('market');
+      const statusDiv = document.getElementById('status');
+      let isLoading = false;
 
-    function setLoading(isLoading) {
-      translateBtn.disabled = isLoading;
-      
-      if (isLoading) {
-        translateBtn.innerHTML = '<span class="button-content"><span class="spinner"></span><span class="button-text">Translating...</span></span>';
-        statusDiv.className = 'status status-loading';
-        statusDiv.textContent = 'Translating your content...';
-      } else {
-        translateBtn.innerHTML = '<span class="button-content"><span class="button-text">Translate Selection</span></span>';
+      function setLoading(isLoading) {
+        translateBtn.disabled = isLoading;
+        if (isLoading) {
+          translateBtn.innerHTML = '<span class="button-content"><span class="spinner"></span><span class="button-text">Translating...</span></span>';
+          statusDiv.className = 'status progress';
+          statusDiv.textContent = 'Starting translation...';
+          statusDiv.style.display = 'block';
+        } else {
+          translateBtn.innerHTML = '<span class="button-content"><span class="button-text">Translate Selection</span></span>';
+        }
       }
-    }
 
-    function showStatus(message, type = 'success', details = '') {
-      statusDiv.className = `status status-${type}`;
-      statusDiv.innerHTML = message;
-      
-      if (details && type === 'error') {
-        const detailsElement = document.createElement('div');
-        detailsElement.className = 'error-details';
-        detailsElement.textContent = details;
-        statusDiv.appendChild(detailsElement);
+      function showStatus(message, type = 'success', details = '') {
+        statusDiv.className = `status ${type}`;
+        statusDiv.innerHTML = message;
+        if (details) {
+          statusDiv.innerHTML += `<div class="error-details">${details}</div>`;
+        }
+        statusDiv.style.display = 'block';
       }
-    }
 
-    translateBtn.onclick = () => {
-      const market = document.getElementById('market').value;
-      setLoading(true);
-      parent.postMessage({ pluginMessage: { type: 'translate', market } }, '*');
-    };
+      translateBtn.addEventListener('click', () => {
+        if (isLoading) return;
+        
+        setLoading(true);
+        parent.postMessage({ 
+          pluginMessage: { 
+            type: 'translate',
+            market: marketSelect.value 
+          }
+        }, '*');
+      });
 
-    onmessage = (event) => {
-      const msg = event.data.pluginMessage;
-      setLoading(false);
-      
-      if (msg.type === 'error') {
-        showStatus('Translation failed', 'error', msg.message || 'An unexpected error occurred');
-      } else if (msg.type === 'success') {
-        showStatus('Translation completed successfully!', 'success');
-      } else if (msg.type === 'rate-limit') {
-        showStatus('Rate limit exceeded', 'error', `Please try again in ${msg.retryAfter} seconds.`);
-      } else {
-        showStatus('An unexpected error occurred', 'error', 'Please try again or contact support if the issue persists.');
-      }
-    };
+      window.onmessage = (event) => {
+        const message = event.data.pluginMessage;
+        if (!message) return;
+
+        switch (message.type) {
+          case 'success':
+            setLoading(false);
+            showStatus(message.message, 'success');
+            break;
+          case 'error':
+            setLoading(false);
+            showStatus(message.message, 'error');
+            break;
+          case 'rate-limit':
+            setLoading(false);
+            showStatus(
+              `Rate limit exceeded. Please try again in ${message.retryAfter} seconds.`,
+              'rate-limit'
+            );
+            break;
+          case 'progress':
+            showStatus(message.message, 'progress');
+            break;
+        }
+      };
+    });
   </script>
 </body>
 </html>
