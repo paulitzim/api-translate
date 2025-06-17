@@ -1,4 +1,4 @@
-figma.showUI(__html__, { width: 300, height: 200 });
+figma.showUI(__html__, { width: 300, height: 500 });
 
 figma.ui.onmessage = async (msg) => {
   if (msg.type === "translate-all") {
@@ -59,7 +59,40 @@ figma.ui.onmessage = async (msg) => {
       }
     }
 
-    figma.notify("All visible text layers translated.");
+    figma.notify("All visible text layers translated");
     figma.closePlugin();
+  },
+  if (msg.type === "translate") {
+    const selection = figma.currentPage.selection;
+    if (selection.length === 0) {
+      figma.notify("Please select at least one text layer.");
+      return;
+    }
+
+    for (const node of selection) {
+      if (node.type === "TEXT") {
+        try {
+          await figma.loadFontAsync(node.fontName);
+          const response = await fetch("https://api-translate-livid.vercel.app/api/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: node.characters, market: msg.market || "Panama" })
+          });
+
+          const data = await response.json();
+          if (data?.translatedText) {
+            node.characters = data.translatedText;
+          }
+        } catch (err) {
+          console.warn("Error:", err);
+        }
+      }
+    }
+
+    figma.notify("Selected text layers translated.");
   }
+
+    // Mantén aquí tu bloque de translate-all si lo tienes también
+  };
+  
 };

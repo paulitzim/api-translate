@@ -1,3 +1,12 @@
+import rateLimit from 'express-rate-limit';
+
+// Configure rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 50, // limit each IP to 50 requests per windowMs
+  message: { error: 'Rate limit exceeded. Please try again in 15 minutes.' }
+});
+
 export const config = {
   api: {
     bodyParser: true,
@@ -5,6 +14,17 @@ export const config = {
 };
 
 export default async function handler(req, res) {
+  // Apply rate limiting
+  try {
+    await limiter(req, res);
+  } catch (error) {
+    return res.status(429).json({ 
+      error: 'Rate limit exceeded',
+      message: 'You have made too many requests. Please try again in 15 minutes.',
+      retryAfter: 15 * 60 // 15 minutes in seconds
+    });
+  }
+
   // Headers CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -85,11 +105,16 @@ export default async function handler(req, res) {
       console.error("❌ Gemini API error:", geminiRes.status, errorText);
       
       if (geminiRes.status === 429) {
-        return res.status(429).json({ error: "Rate limit exceeded. Please try again later." });
+        return res.status(429).json({ 
+          error: "Rate limit exceeded",
+          message: "The translation service is currently busy. Please try again in a few minutes.",
+          retryAfter: 60 // 1 minute in seconds
+        });
       }
       
       return res.status(500).json({ 
         error: "Translation service unavailable",
+        message: "We're experiencing technical difficulties. Please try again later.",
         detail: `API returned ${geminiRes.status}` 
       });
     }
