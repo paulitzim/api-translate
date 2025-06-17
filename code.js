@@ -1,102 +1,94 @@
 figma.showUI(__html__, { width: 320, height: 400 });
 
-// Helper function to process text nodes in batches
-async function processTextNodes(nodes, market, batchSize = 5) {
-  let successCount = 0;
-  let errorCount = 0;
-  
-  // Process nodes in batches
-  for (let i = 0; i < nodes.length; i += batchSize) {
-    const batch = nodes.slice(i, i + batchSize);
-    const batchPromises = batch.map(async (node) => {
-      if (node.type !== "TEXT") return;
-      
-      try {
-        // Load font before accessing text
-        await figma.loadFontAsync(node.fontName);
-        
-        const originalText = node.characters;
-        if (!originalText || originalText.trim() === "") {
-          return;
-        }
-
-        // Make API request
-        const response = await fetch("https://api-translate-livid.vercel.app/api/translate", {
-          method: "POST",
-          headers: { 
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-          },
-          body: JSON.stringify({ 
-            text: originalText, 
-            market: market || "Panama" 
-          })
-        });
-
-        // Handle rate limiting
-        if (response.status === 429) {
-          const data = await response.json();
-          figma.ui.postMessage({ 
-            type: 'rate-limit',
-            retryAfter: data.retryAfter || 60
-          });
-          return;
-        }
-
-        // Handle other errors
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          figma.ui.postMessage({ 
-            type: 'error',
-            message: `API Error: ${errorData.message || response.statusText || 'Unknown error'}`
-          });
-          errorCount++;
-          return;
-        }
-
-        // Parse response
-        const data = await response.json();
-        
-        // Validate response
-        if (!data || typeof data !== 'object' || !data.translatedText || typeof data.translatedText !== 'string') {
-          figma.ui.postMessage({ 
-            type: 'error',
-            message: 'Invalid response from translation service'
-          });
-          errorCount++;
-          return;
-        }
-
-        // Store original text and update with translation
-        await node.setPluginData("originalText", originalText);
-        node.characters = data.translatedText;
-        successCount++;
-
-      } catch (err) {
-        console.error("Translation error:", err);
-        figma.ui.postMessage({ 
-          type: 'error',
-          message: `Error: ${err.message || 'Unknown error occurred'}`
-        });
-        errorCount++;
-      }
-    });
-
-    // Wait for current batch to complete
-    await Promise.all(batchPromises);
-    
-    // Send progress update
-    if (successCount > 0 || errorCount > 0) {
-      figma.ui.postMessage({ 
-        type: 'progress',
-        message: `Processed ${i + batch.length} of ${nodes.length} layers`
-      });
-    }
+// Helper function to process a single text node
+async function processTextNode(node, market) {
+  if (node.type !== "TEXT") {
+    return { processed: true, success: false, error: null };
   }
 
-  return { successCount, errorCount };
+  try {
+    // Load font before accessing text
+    await figma.loadFontAsync(node.fontName);
+    
+    const originalText = node.characters;
+    if (!originalText || originalText.trim() === "") {
+      return { processed: true, success: false, error: null };
+    }
+
+    // Make API request
+    const response = await fetch("https://api-translate-livid.vercel.app/api/translate", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({ 
+        text: originalText, 
+        market: market || "Panama" 
+      })
+    });
+
+    // Handle rate limiting
+    if (response.status === 429) {
+      const data = await response.json();
+      return { 
+        processed: false, 
+        success: false, 
+        error: { 
+          type: 'rate-limit',
+          retryAfter: data.retryAfter || 60
+        }
+      };
+    }
+
+    // Handle other errors
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { 
+        processed: true, 
+        success: false, 
+        error: { 
+          type: 'error',
+          message: `API Error: ${errorData.message || response.statusText || 'Unknown error'}`
+        }
+      };
+    }
+
+    // Parse response
+    const data = await response.json();
+    
+    // Validate response
+    if (!data || typeof data !== 'object' || !data.translatedText || typeof data.translatedText !== 'string') {
+      return { 
+        processed: true, 
+        success: false, 
+        error: { 
+          type: 'error',
+          message: 'Invalid response from translation service'
+        }
+      };
+    }
+
+    // Store original text and update with translation
+    await node.setPluginData("originalText", originalText);
+    node.characters = data.translatedText;
+    
+    return { processed: true, success: true, error: null };
+
+  } catch (err) {
+    console.error("Translation error:", err);
+    return { 
+      processed: true, 
+      success: false, 
+      error: { 
+        type: 'error',
+        message: `Error: ${err.message || 'Unknown error occurred'}`
+      }
+    };
+  }
 }
 
+// Message handler
 figma.ui.onmessage = async (msg) => {
   if (msg.type === "translate") {
     const selection = figma.currentPage.selection;
@@ -108,8 +100,47 @@ figma.ui.onmessage = async (msg) => {
       return;
     }
 
+    let successCount = 0;
+    let errorCount = 0;
+    let processedCount = 0;
+    const totalNodes = selection.length;
+
     try {
-      const { successCount, errorCount } = await processTextNodes(selection, msg.market);
+      for (const node of selection) {
+        const result = await processTextNode(node, msg.market);
+        
+        if (!result.processed) {
+          if (result.error && result.error.type === 'rate-limit') {
+            figma.ui.postMessage({ 
+              type: 'rate-limit',
+              retryAfter: result.error.retryAfter
+            });
+            return;
+          }
+          continue;
+        }
+
+        processedCount++;
+        
+        if (result.success) {
+          successCount++;
+        } else if (result.error) {
+          errorCount++;
+          figma.ui.postMessage({ 
+            type: 'error',
+            message: result.error.message
+          });
+        }
+
+        // Send progress update
+        figma.ui.postMessage({ 
+          type: 'progress',
+          message: `Processed ${processedCount} of ${totalNodes} layers`
+        });
+      }
+
+      // Send completion message
+      figma.ui.postMessage({ type: 'complete' });
 
       // Send final status
       if (successCount > 0) {
@@ -122,9 +153,15 @@ figma.ui.onmessage = async (msg) => {
           type: 'error',
           message: `Failed to translate ${errorCount} layer${errorCount > 1 ? 's' : ''}`
         });
+      } else {
+        figma.ui.postMessage({ 
+          type: 'error',
+          message: 'No text layers were found to translate.'
+        });
       }
     } catch (err) {
-      console.error("Batch processing error:", err);
+      console.error("Translation error:", err);
+      figma.ui.postMessage({ type: 'complete' });
       figma.ui.postMessage({ 
         type: 'error',
         message: `Error: ${err.message || 'Unknown error occurred'}`

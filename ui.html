@@ -23,9 +23,10 @@
     }
 
     :root {
-      --primary-color: #18A0FB;
+      --primary-color: #ff4100;
+      --primary-hover: #e63a00;
       --error-color: #F24822;
-      --success-color: #0CCE6B;
+      --success-color: #00a86b;
       --text-color: #333333;
       --border-color: #E5E5E5;
       --background-color: #FFFFFF;
@@ -66,7 +67,7 @@
       font-size: 20px;
       font-weight: 500;
       margin: 0 0 8px 0;
-      color: var(--text-color);
+      color: var(--primary-color);
     }
 
     .tagline {
@@ -104,7 +105,7 @@
     .market-selector select:focus {
       outline: none;
       border-color: var(--primary-color);
-      box-shadow: 0 0 0 2px rgba(24, 160, 251, 0.1);
+      box-shadow: 0 0 0 2px rgba(255, 65, 0, 0.1);
     }
 
     .button {
@@ -122,7 +123,7 @@
     }
 
     .button:hover {
-      background: #0D8DE3;
+      background: var(--primary-hover);
     }
 
     .button:disabled {
@@ -142,7 +143,7 @@
     }
 
     .status.success {
-      background: rgba(12, 206, 107, 0.1);
+      background: rgba(0, 168, 107, 0.1);
       color: var(--success-color);
       border: 1px solid var(--success-color);
     }
@@ -160,7 +161,7 @@
     }
 
     .status.progress {
-      background: rgba(24, 160, 251, 0.1);
+      background: rgba(255, 65, 0, 0.1);
       color: var(--primary-color);
       border: 1px solid var(--primary-color);
     }
@@ -180,12 +181,12 @@
       border-radius: 50%;
       border-top-color: white;
       animation: spin 1s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
     }
 
     @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
+      to { transform: rotate(360deg); }
     }
 
     .button-content {
@@ -285,6 +286,9 @@
             break;
           case 'progress':
             showStatus(message.message, 'progress');
+            break;
+          case 'complete':
+            setLoading(false);
             break;
         }
       };
