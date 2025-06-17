@@ -1,27 +1,42 @@
-import rateLimit from 'express-rate-limit';
-
-// Configure rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 50, // limit each IP to 50 requests per windowMs
-  message: { error: 'Rate limit exceeded. Please try again in 15 minutes.' }
-});
-
 export const config = {
   api: {
     bodyParser: true,
   },
 };
 
+// Simple in-memory store for rate limiting
+const rateLimitStore = new Map();
+
+// Rate limiting middleware
+function rateLimit(req, res) {
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  const now = Date.now();
+  const windowMs = 15 * 60 * 1000; // 15 minutes
+  const maxRequests = 50;
+
+  const userRequests = rateLimitStore.get(ip) || [];
+  const validRequests = userRequests.filter(time => now - time < windowMs);
+
+  if (validRequests.length >= maxRequests) {
+    return {
+      limited: true,
+      retryAfter: Math.ceil((validRequests[0] + windowMs - now) / 1000)
+    };
+  }
+
+  validRequests.push(now);
+  rateLimitStore.set(ip, validRequests);
+  return { limited: false };
+}
+
 export default async function handler(req, res) {
   // Apply rate limiting
-  try {
-    await limiter(req, res);
-  } catch (error) {
-    return res.status(429).json({ 
+  const rateLimitResult = rateLimit(req, res);
+  if (rateLimitResult.limited) {
+    return res.status(429).json({
       error: 'Rate limit exceeded',
-      message: 'You have made too many requests. Please try again in 15 minutes.',
-      retryAfter: 15 * 60 // 15 minutes in seconds
+      message: 'You have made too many requests. Please try again in a few minutes.',
+      retryAfter: rateLimitResult.retryAfter
     });
   }
 

@@ -2,9 +2,10 @@
 <html>
 <head>
   <meta charset="UTF-8" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: sans-serif;
+      font-family: 'Roboto', sans-serif;
       padding: 16px;
     }
     h1 {
@@ -28,9 +29,14 @@
       border-radius: 4px;
       cursor: pointer;
       margin: 8px 0;
+      position: relative;
     }
     button:hover {
       background: #7c167b;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
     }
     select {
       padding: 6px;
@@ -39,12 +45,48 @@
       border-radius: 4px;
       border: 1px solid #ccc;
     }
+    .status-container {
+      margin-top: 16px;
+      padding: 8px;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 12px;
+      min-height: 20px;
+    }
+    .status-success {
+      background-color: #e6ffe6;
+      color: #006600;
+    }
+    .status-error {
+      background-color: #ffe6e6;
+      color: #cc0000;
+    }
+    .status-loading {
+      background-color: #e6f3ff;
+      color: #0066cc;
+    }
+    .spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
 <body>
   <div style="text-align: center; margin-bottom: 12px;">
     <img src="https://lla.com/sites/default/files/newlibertylogo.png" alt="LLA Logo" style="width: auto; max-height: 93px;" />
-    <h2 style="font-family: Inter, sans-serif; font-size: 16px; margin-top: 8px;">LLA UX Translator</h2>
+    <h2 style="font-family: 'Roboto', sans-serif; font-size: 16px; margin-top: 8px;">LLA UX Translator</h2>
   </div>
 
   <p style="margin: 8px; font-size: 12px; color: #666;">
@@ -58,19 +100,64 @@
       <option value="Puerto Rico">Puerto Rico</option>
     </select><br />
 
-    <button id="translate-btn">Translate Selection</button>
-    <button id="translate-all-btn">Translate Entire File</button>
+    <button id="translate-btn">
+      <span class="button-text">Translate Selection</span>
+    </button>
+    <button id="translate-all-btn">
+      <span class="button-text">Translate Entire File</span>
+    </button>
   </div>
 
+  <div id="status" class="status-container"></div>
+
   <script>
-    document.getElementById('translate-btn').onclick = () => {
+    const translateBtn = document.getElementById('translate-btn');
+    const translateAllBtn = document.getElementById('translate-all-btn');
+    const statusDiv = document.getElementById('status');
+
+    function setLoading(isLoading) {
+      translateBtn.disabled = isLoading;
+      translateAllBtn.disabled = isLoading;
+      
+      if (isLoading) {
+        translateBtn.innerHTML = '<span class="spinner"></span><span class="button-text">Translating...</span>';
+        translateAllBtn.innerHTML = '<span class="spinner"></span><span class="button-text">Translating...</span>';
+        statusDiv.className = 'status-container status-loading';
+        statusDiv.textContent = 'Translating your content...';
+      } else {
+        translateBtn.innerHTML = '<span class="button-text">Translate Selection</span>';
+        translateAllBtn.innerHTML = '<span class="button-text">Translate Entire File</span>';
+      }
+    }
+
+    function showStatus(message, type = 'success') {
+      statusDiv.className = `status-container status-${type}`;
+      statusDiv.textContent = message;
+    }
+
+    translateBtn.onclick = () => {
       const market = document.getElementById('market').value;
+      setLoading(true);
       parent.postMessage({ pluginMessage: { type: 'translate', market } }, '*');
     };
 
-    document.getElementById('translate-all-btn').onclick = () => {
+    translateAllBtn.onclick = () => {
       const market = document.getElementById('market').value;
+      setLoading(true);
       parent.postMessage({ pluginMessage: { type: 'translate-all', market } }, '*');
+    };
+
+    onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+      setLoading(false);
+      
+      if (msg.type === 'error') {
+        showStatus(msg.message || 'An error occurred', 'error');
+      } else if (msg.type === 'success') {
+        showStatus(msg.message || 'Translation completed successfully!', 'success');
+      } else if (msg.type === 'rate-limit') {
+        showStatus(`Rate limit exceeded. Please try again in ${msg.retryAfter} seconds.`, 'error');
+      }
     };
   </script>
 </body>

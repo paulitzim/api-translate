@@ -3,7 +3,6 @@ figma.showUI(__html__, { width: 300, height: 500 });
 figma.ui.onmessage = async (msg) => {
   if (msg.type === "translate-all") {
     const market = msg.market || "Panama";
-
     
     const allTextNodes = [];
 
@@ -23,12 +22,14 @@ figma.ui.onmessage = async (msg) => {
       }
     }
 
+    let successCount = 0;
+    let errorCount = 0;
+
     for (const node of allTextNodes) {
       try {
         await figma.loadFontAsync(node.fontName);
         const originalText = node.characters;
         if (!originalText || originalText.trim() === "") continue;
-
 
         const response = await fetch("https://api-translate-livid.vercel.app/api/translate", {
           method: "POST",
@@ -36,7 +37,18 @@ figma.ui.onmessage = async (msg) => {
           body: JSON.stringify({ text: originalText, market })
         });
 
-        if (!response.ok) continue;
+        if (!response.ok) {
+          if (response.status === 429) {
+            const data = await response.json();
+            figma.ui.postMessage({ 
+              type: 'rate-limit',
+              retryAfter: data.retryAfter || 60
+            });
+            return;
+          }
+          errorCount++;
+          continue;
+        }
 
         const data = await response.json();
 
@@ -50,24 +62,37 @@ figma.ui.onmessage = async (msg) => {
           translated = data.translatedText;
         }
 
-        if (!translated) continue;
+        if (!translated) {
+          errorCount++;
+          continue;
+        }
 
         await node.setPluginData("originalText", originalText);
         node.characters = translated;
+        successCount++;
       } catch (err) {
         console.warn("Error processing node:", err);
+        errorCount++;
       }
     }
 
-    figma.notify("All visible text layers translated");
-    figma.closePlugin();
-  },
-  if (msg.type === "translate") {
+    figma.ui.postMessage({ 
+      type: 'success',
+      message: `Translation completed! Successfully translated ${successCount} layers${errorCount > 0 ? ` (${errorCount} failed)` : ''}`
+    });
+  }
+  else if (msg.type === "translate") {
     const selection = figma.currentPage.selection;
     if (selection.length === 0) {
-      figma.notify("Please select at least one text layer.");
+      figma.ui.postMessage({ 
+        type: 'error',
+        message: 'Please select at least one text layer.'
+      });
       return;
     }
+
+    let successCount = 0;
+    let errorCount = 0;
 
     for (const node of selection) {
       if (node.type === "TEXT") {
@@ -79,20 +104,36 @@ figma.ui.onmessage = async (msg) => {
             body: JSON.stringify({ text: node.characters, market: msg.market || "Panama" })
           });
 
+          if (!response.ok) {
+            if (response.status === 429) {
+              const data = await response.json();
+              figma.ui.postMessage({ 
+                type: 'rate-limit',
+                retryAfter: data.retryAfter || 60
+              });
+              return;
+            }
+            errorCount++;
+            continue;
+          }
+
           const data = await response.json();
           if (data?.translatedText) {
             node.characters = data.translatedText;
+            successCount++;
+          } else {
+            errorCount++;
           }
         } catch (err) {
           console.warn("Error:", err);
+          errorCount++;
         }
       }
     }
 
-    figma.notify("Selected text layers translated.");
+    figma.ui.postMessage({ 
+      type: 'success',
+      message: `Translation completed! Successfully translated ${successCount} layers${errorCount > 0 ? ` (${errorCount} failed)` : ''}`
+    });
   }
-
-    // Mantén aquí tu bloque de translate-all si lo tienes también
-  };
-  
 };
