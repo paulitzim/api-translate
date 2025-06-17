@@ -2,113 +2,213 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --primary-color: #ff4100;
+      --primary-hover: #7c167b;
+      --text-primary: #333333;
+      --text-secondary: #666666;
+      --background-light: #f5f5f5;
+      --success-color: #00a86b;
+      --error-color: #dc3545;
+      --info-color: #0066cc;
+      --border-radius: 8px;
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+    }
+
     body {
       font-family: 'Roboto', sans-serif;
-      padding: 16px;
+      margin: 0;
+      padding: var(--spacing-md);
+      background-color: white;
+      color: var(--text-primary);
     }
-    h1 {
-      font-size: 18px;
-      margin-bottom: 4px;
+
+    .container {
+      max-width: 100%;
+      margin: 0 auto;
     }
-    h2 {
-      font-size: 12px;
-      color: #666;
-      margin-top: 0;
-      margin-bottom: 16px;
-    }
-    img.logo {
-      margin-bottom: 12px;
-    }
-    button {
-      padding: 8px 12px;
-      background: #ff4100;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin: 8px 0;
-      position: relative;
-    }
-    button:hover {
-      background: #7c167b;
-    }
-    button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-    select {
-      padding: 6px;
-      margin-top: 8px;
-      margin-bottom: 16px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-    .status-container {
-      margin-top: 16px;
-      padding: 8px;
-      border-radius: 4px;
+
+    .header {
       text-align: center;
-      font-size: 12px;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .logo {
+      width: auto;
+      max-height: 60px;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: var(--spacing-sm) 0;
+    }
+
+    .description {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: var(--spacing-lg);
+      padding: 0 var(--spacing-md);
+    }
+
+    .form-group {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
+      background-color: white;
+      font-size: 14px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: border-color 0.2s ease;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      margin-top: var(--spacing-md);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: var(--border-radius);
+      background-color: var(--primary-color);
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+    }
+
+    button:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status-container {
+      margin-top: var(--spacing-lg);
+      padding: var(--spacing-md);
+      border-radius: var(--border-radius);
+      text-align: center;
+      font-size: 14px;
       min-height: 20px;
+      transition: all 0.3s ease;
     }
+
     .status-success {
-      background-color: #e6ffe6;
-      color: #006600;
+      background-color: rgba(0, 168, 107, 0.1);
+      color: var(--success-color);
+      border: 1px solid rgba(0, 168, 107, 0.2);
     }
+
     .status-error {
-      background-color: #ffe6e6;
-      color: #cc0000;
+      background-color: rgba(220, 53, 69, 0.1);
+      color: var(--error-color);
+      border: 1px solid rgba(220, 53, 69, 0.2);
     }
+
     .status-loading {
-      background-color: #e6f3ff;
-      color: #0066cc;
+      background-color: rgba(0, 102, 204, 0.1);
+      color: var(--info-color);
+      border: 1px solid rgba(0, 102, 204, 0.2);
     }
+
     .spinner {
       display: inline-block;
-      width: 12px;
-      height: 12px;
-      border: 2px solid #ffffff;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%;
-      border-top-color: transparent;
+      border-top-color: white;
       animation: spin 1s linear infinite;
-      margin-right: 8px;
-      vertical-align: middle;
     }
+
     @keyframes spin {
       to {
         transform: rotate(360deg);
       }
     }
+
+    .button-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+    }
   </style>
 </head>
 <body>
-  <div style="text-align: center; margin-bottom: 12px;">
-    <img src="https://lla.com/sites/default/files/newlibertylogo.png" alt="LLA Logo" style="width: auto; max-height: 93px;" />
-    <h2 style="font-family: 'Roboto', sans-serif; font-size: 16px; margin-top: 8px;">LLA copy Translator</h2>
+  <div class="container">
+    <div class="header">
+      <img src="https://lla.com/sites/default/files/newlibertylogo.png" alt="LLA Logo" class="logo" />
+      <h1 class="title">LLA UX Translator</h1>
+    </div>
+
+    <p class="description">
+      This plugin helps UX writers and designers translate interface copy from English to Spanish, adapting tone and vocabulary to specific Liberty Latin America markets like Panama or Puerto Rico.
+    </p>
+
+    <div class="form-group">
+      <label class="form-label" for="market">Choose your market:</label>
+      <select id="market">
+        <option value="Panama">Panama</option>
+        <option value="Puerto Rico">Puerto Rico</option>
+      </select>
+    </div>
+
+    <div class="button-group">
+      <button id="translate-btn">
+        <span class="button-content">
+          <span class="button-text">Translate Selection</span>
+        </span>
+      </button>
+      <button id="translate-all-btn">
+        <span class="button-content">
+          <span class="button-text">Translate Entire File</span>
+        </span>
+      </button>
+    </div>
+
+    <div id="status" class="status-container"></div>
   </div>
-
-  <p style="margin: 8px; font-size: 12px; color: #666;">
-    This plugin helps you to translate interface copy from English to Spanish, adapting tone and vocabulary to specific LLA markets like Panama or Puerto Rico.
-  </p>
-
-  <div style="text-align: center;">
-    <label for="market">Choose the market:</label><br />
-    <select id="market">
-      <option value="Panama">🇵🇦 Panama</option>
-      <option value="Puerto Rico">🇵🇷 Puerto Rico</option>
-    </select><br />
-
-    <button id="translate-btn">
-      <span class="button-text">Translate Selection</span>
-    </button>
-    <button id="translate-all-btn">
-      <span class="button-text">Translate Entire File</span>
-    </button>
-  </div>
-
-  <div id="status" class="status-container"></div>
 
   <script>
     const translateBtn = document.getElementById('translate-btn');
@@ -120,13 +220,13 @@
       translateAllBtn.disabled = isLoading;
       
       if (isLoading) {
-        translateBtn.innerHTML = '<span class="spinner"></span><span class="button-text">Translating...</span>';
-        translateAllBtn.innerHTML = '<span class="spinner"></span><span class="button-text">Translating...</span>';
+        translateBtn.innerHTML = '<span class="button-content"><span class="spinner"></span><span class="button-text">Translating...</span></span>';
+        translateAllBtn.innerHTML = '<span class="button-content"><span class="spinner"></span><span class="button-text">Translating...</span></span>';
         statusDiv.className = 'status-container status-loading';
         statusDiv.textContent = 'Translating your content...';
       } else {
-        translateBtn.innerHTML = '<span class="button-text">Translate Selection</span>';
-        translateAllBtn.innerHTML = '<span class="button-text">Translate Entire File</span>';
+        translateBtn.innerHTML = '<span class="button-content"><span class="button-text">Translate Selection</span></span>';
+        translateAllBtn.innerHTML = '<span class="button-content"><span class="button-text">Translate Entire File</span></span>';
       }
     }
 
