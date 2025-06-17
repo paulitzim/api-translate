@@ -159,6 +159,13 @@
       border: 1px solid rgba(0, 102, 204, 0.2);
     }
 
+    .error-details {
+      margin-top: var(--spacing-sm);
+      font-size: 12px;
+      color: var(--error-color);
+      word-break: break-word;
+    }
+
     .spinner {
       display: inline-block;
       width: 16px;
@@ -226,9 +233,16 @@
       }
     }
 
-    function showStatus(message, type = 'success') {
+    function showStatus(message, type = 'success', details = '') {
       statusDiv.className = `status-container status-${type}`;
-      statusDiv.textContent = message;
+      statusDiv.innerHTML = message;
+      
+      if (details && type === 'error') {
+        const detailsElement = document.createElement('div');
+        detailsElement.className = 'error-details';
+        detailsElement.textContent = details;
+        statusDiv.appendChild(detailsElement);
+      }
     }
 
     translateBtn.onclick = () => {
@@ -242,11 +256,13 @@
       setLoading(false);
       
       if (msg.type === 'error') {
-        showStatus(msg.message || 'An error occurred', 'error');
+        showStatus('Translation failed', 'error', msg.message || 'An unexpected error occurred');
       } else if (msg.type === 'success') {
-        showStatus(msg.message || 'Translation completed successfully!', 'success');
+        showStatus('Translation completed successfully!', 'success');
       } else if (msg.type === 'rate-limit') {
-        showStatus(`Rate limit exceeded. Please try again in ${msg.retryAfter} seconds.`, 'error');
+        showStatus('Rate limit exceeded', 'error', `Please try again in ${msg.retryAfter} seconds.`);
+      } else {
+        showStatus('An unexpected error occurred', 'error', 'Please try again or contact support if the issue persists.');
       }
     };
   </script>

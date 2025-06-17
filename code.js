@@ -1,86 +1,7 @@
 figma.showUI(__html__, { width: 300, height: 550 });
 
 figma.ui.onmessage = async (msg) => {
-  if (msg.type === "translate-all") {
-    const market = msg.market || "Panama";
-    
-    const allTextNodes = [];
-
-    function findTextNodes(node) {
-      if (node.type === "TEXT") {
-        allTextNodes.push(node);
-      } else if ("children" in node) {
-        for (const child of node.children) {
-          findTextNodes(child);
-        }
-      }
-    }
-
-    for (const page of figma.root.children) {
-      for (const node of page.children) {
-        findTextNodes(node);
-      }
-    }
-
-    let successCount = 0;
-    let errorCount = 0;
-
-    for (const node of allTextNodes) {
-      try {
-        await figma.loadFontAsync(node.fontName);
-        const originalText = node.characters;
-        if (!originalText || originalText.trim() === "") continue;
-
-        const response = await fetch("https://api-translate-livid.vercel.app/api/translate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: originalText, market })
-        });
-
-        if (!response.ok) {
-          if (response.status === 429) {
-            const data = await response.json();
-            figma.ui.postMessage({ 
-              type: 'rate-limit',
-              retryAfter: data.retryAfter || 60
-            });
-            return;
-          }
-          errorCount++;
-          continue;
-        }
-
-        const data = await response.json();
-
-        let translated = null;
-        if (
-          data &&
-          typeof data === "object" &&
-          "translatedText" in data &&
-          typeof data.translatedText === "string"
-        ) {
-          translated = data.translatedText;
-        }
-
-        if (!translated) {
-          errorCount++;
-          continue;
-        }
-
-        await node.setPluginData("originalText", originalText);
-        node.characters = translated;
-        successCount++;
-      } catch (err) {
-        console.warn("Error processing node:", err);
-        errorCount++;
-      }
-    }
-
-    figma.ui.postMessage({ 
-      type: 'success',
-      message: `Translation completed! Successfully translated ${successCount} layers${errorCount > 0 ? ` (${errorCount} failed)` : ''}`
-    });
-  } else if (msg.type === "translate") {
+  if (msg.type === "translate") {
     const selection = figma.currentPage.selection;
     if (selection.length === 0) {
       figma.ui.postMessage({ 
@@ -96,43 +17,88 @@ figma.ui.onmessage = async (msg) => {
     for (const node of selection) {
       if (node.type === "TEXT") {
         try {
+          // Load font before accessing text
           await figma.loadFontAsync(node.fontName);
+          
+          const originalText = node.characters;
+          if (!originalText || originalText.trim() === "") {
+            continue;
+          }
+
+          // Make API request
           const response = await fetch("https://api-translate-livid.vercel.app/api/translate", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: node.characters, market: msg.market || "Panama" })
+            headers: { 
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+            body: JSON.stringify({ 
+              text: originalText, 
+              market: msg.market || "Panama" 
+            })
           });
 
+          // Handle rate limiting
+          if (response.status === 429) {
+            const data = await response.json();
+            figma.ui.postMessage({ 
+              type: 'rate-limit',
+              retryAfter: data.retryAfter || 60
+            });
+            return;
+          }
+
+          // Handle other errors
           if (!response.ok) {
-            if (response.status === 429) {
-              const data = await response.json();
-              figma.ui.postMessage({ 
-                type: 'rate-limit',
-                retryAfter: data.retryAfter || 60
-              });
-              return;
-            }
+            const errorData = await response.json().catch(() => ({}));
+            figma.ui.postMessage({ 
+              type: 'error',
+              message: `API Error: ${errorData.message || response.statusText || 'Unknown error'}`
+            });
             errorCount++;
             continue;
           }
 
+          // Parse response
           const data = await response.json();
-          if (data && data.translatedText) {
-            node.characters = data.translatedText;
-            successCount++;
-          } else {
+          
+          // Validate response
+          if (!data || typeof data !== 'object' || !data.translatedText || typeof data.translatedText !== 'string') {
+            figma.ui.postMessage({ 
+              type: 'error',
+              message: 'Invalid response from translation service'
+            });
             errorCount++;
+            continue;
           }
+
+          // Store original text and update with translation
+          await node.setPluginData("originalText", originalText);
+          node.characters = data.translatedText;
+          successCount++;
+
         } catch (err) {
-          console.warn("Error:", err);
+          console.error("Translation error:", err);
+          figma.ui.postMessage({ 
+            type: 'error',
+            message: `Error: ${err.message || 'Unknown error occurred'}`
+          });
           errorCount++;
         }
       }
     }
 
-    figma.ui.postMessage({ 
-      type: 'success',
-      message: `Translation completed! Successfully translated ${successCount} layers${errorCount > 0 ? ` (${errorCount} failed)` : ''}`
-    });
+    // Send final status
+    if (successCount > 0) {
+      figma.ui.postMessage({ 
+        type: 'success',
+        message: `Successfully translated ${successCount} layer${successCount > 1 ? 's' : ''}`
+      });
+    } else if (errorCount > 0) {
+      figma.ui.postMessage({ 
+        type: 'error',
+        message: `Failed to translate ${errorCount} layer${errorCount > 1 ? 's' : ''}`
+      });
+    }
   }
 };
