@@ -23,13 +23,16 @@
     }
 
     :root {
-      --primary-color: #ff4100;
-      --primary-hover: #7c167b;
+      --primary-color: #18A0FB;
+      --error-color: #F24822;
+      --success-color: #0CCE6B;
+      --text-color: #333333;
+      --border-color: #E5E5E5;
+      --background-color: #FFFFFF;
+      --hover-color: #F5F5F5;
       --text-primary: #333333;
       --text-secondary: #666666;
       --background-light: #f5f5f5;
-      --success-color: #00a86b;
-      --error-color: #dc3545;
       --info-color: #0066cc;
       --border-radius: 8px;
       --spacing-xs: 4px;
@@ -39,130 +42,127 @@
     }
 
     body {
-      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: 'Roboto', sans-serif;
       margin: 0;
-      padding: var(--spacing-md);
-      background-color: white;
-      color: var(--text-primary);
+      padding: 0;
+      background: var(--background-color);
+      color: var(--text-color);
+      font-size: 14px;
+      line-height: 1.5;
     }
 
     .container {
+      padding: 16px;
       max-width: 100%;
-      margin: 0 auto;
+      box-sizing: border-box;
     }
 
     .header {
+      margin-bottom: 24px;
       text-align: center;
-      margin-bottom: var(--spacing-lg);
-      padding: var(--spacing-md) 0;
-      border-bottom: 2px solid var(--primary-color);
     }
 
     .title {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--primary-color);
-      margin: 0;
-      padding: var(--spacing-sm) 0;
-    }
-
-    .description {
-      font-size: 14px;
-      color: var(--text-secondary);
-      line-height: 1.5;
-      margin-bottom: var(--spacing-lg);
-      padding: 0 var(--spacing-md);
-    }
-
-    .form-group {
-      margin-bottom: var(--spacing-md);
-    }
-
-    .form-label {
-      display: block;
-      font-size: 14px;
+      font-size: 20px;
       font-weight: 500;
-      color: var(--text-primary);
-      margin-bottom: var(--spacing-xs);
+      margin: 0 0 8px 0;
+      color: var(--text-color);
     }
 
-    select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: var(--border-radius);
-      background-color: white;
+    .tagline {
       font-size: 14px;
-      color: var(--text-primary);
-      cursor: pointer;
-      transition: border-color 0.2s ease;
+      color: #666;
+      margin: 0;
     }
 
-    select:focus {
-      outline: none;
+    .market-selector {
+      margin-bottom: 24px;
+    }
+
+    .market-selector label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .market-selector select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background: var(--background-color);
+      font-size: 14px;
+      color: var(--text-color);
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .market-selector select:hover {
       border-color: var(--primary-color);
     }
 
-    button {
+    .market-selector select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(24, 160, 251, 0.1);
+    }
+
+    .button {
       width: 100%;
       padding: 12px;
-      border: none;
-      border-radius: var(--border-radius);
-      background-color: var(--primary-color);
+      background: var(--primary-color);
       color: white;
+      border: none;
+      border-radius: 6px;
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--spacing-sm);
+      transition: background-color 0.2s;
+      margin-bottom: 16px;
     }
 
-    button:hover {
-      background-color: var(--primary-hover);
-      transform: translateY(-1px);
+    .button:hover {
+      background: #0D8DE3;
     }
 
-    button:disabled {
-      background-color: #ccc;
+    .button:disabled {
+      background: #CCCCCC;
       cursor: not-allowed;
-      transform: none;
     }
 
-    .status-container {
-      margin-top: var(--spacing-lg);
-      padding: var(--spacing-md);
-      border-radius: var(--border-radius);
-      text-align: center;
+    .status {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 6px;
       font-size: 14px;
-      min-height: 20px;
-      transition: all 0.3s ease;
+      display: none;
+      word-wrap: break-word;
+      max-width: 100%;
+      box-sizing: border-box;
     }
 
-    .status-success {
-      background-color: rgba(0, 168, 107, 0.1);
+    .status.success {
+      background: rgba(12, 206, 107, 0.1);
       color: var(--success-color);
-      border: 1px solid rgba(0, 168, 107, 0.2);
+      border: 1px solid var(--success-color);
     }
 
-    .status-error {
-      background-color: rgba(220, 53, 69, 0.1);
+    .status.error {
+      background: rgba(242, 72, 34, 0.1);
       color: var(--error-color);
-      border: 1px solid rgba(220, 53, 69, 0.2);
+      border: 1px solid var(--error-color);
     }
 
-    .status-loading {
-      background-color: rgba(0, 102, 204, 0.1);
-      color: var(--info-color);
-      border: 1px solid rgba(0, 102, 204, 0.2);
+    .status.rate-limit {
+      background: rgba(255, 171, 0, 0.1);
+      color: #FFAB00;
+      border: 1px solid #FFAB00;
     }
 
     .error-details {
-      margin-top: var(--spacing-sm);
+      margin-top: 8px;
       font-size: 12px;
-      color: var(--error-color);
+      color: #666;
       word-break: break-word;
     }
 
@@ -196,25 +196,25 @@
       <h1 class="title">LLA UX Translator</h1>
     </div>
 
-    <p class="description">
+    <p class="tagline">
       This plugin helps UX writers and designers translate interface copy from English to Spanish, adapting tone and vocabulary to specific Liberty Latin America markets like Panama or Puerto Rico.
     </p>
 
-    <div class="form-group">
-      <label class="form-label" for="market">Choose your market:</label>
+    <div class="market-selector">
+      <label for="market">Choose your market:</label>
       <select id="market">
         <option value="Panama">Panama</option>
         <option value="Puerto Rico">Puerto Rico</option>
       </select>
     </div>
 
-    <button id="translate-btn">
+    <button id="translate-btn" class="button">
       <span class="button-content">
         <span class="button-text">Translate Selection</span>
       </span>
     </button>
 
-    <div id="status" class="status-container"></div>
+    <div id="status" class="status"></div>
   </div>
 
   <script>
@@ -226,7 +226,7 @@
       
       if (isLoading) {
         translateBtn.innerHTML = '<span class="button-content"><span class="spinner"></span><span class="button-text">Translating...</span></span>';
-        statusDiv.className = 'status-container status-loading';
+        statusDiv.className = 'status status-loading';
         statusDiv.textContent = 'Translating your content...';
       } else {
         translateBtn.innerHTML = '<span class="button-content"><span class="button-text">Translate Selection</span></span>';
@@ -234,7 +234,7 @@
     }
 
     function showStatus(message, type = 'success', details = '') {
-      statusDiv.className = `status-container status-${type}`;
+      statusDiv.className = `status status-${type}`;
       statusDiv.innerHTML = message;
       
       if (details && type === 'error') {
