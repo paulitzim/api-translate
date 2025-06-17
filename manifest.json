@@ -1,6 +1,6 @@
 {
-  "name": "LLA UX Translator",
-  "id": "lla-ux-translator",
+  "name": "LLA Copy Translator",
+  "id": "1516886140521951084",
   "api": "1.0.0",
   "main": "code.js",
   "ui": "ui.html",
