@@ -8,5 +8,6 @@
   "menu": [
     { "name": "Translate Text", "command": "translate" }
   ],
-  "editorType": ["figma"]
+  "editorType": ["figma"],
+  "networkAccess": { "allowedDomains": "lla.com" }
 }
