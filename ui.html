@@ -103,13 +103,6 @@
       border-color: var(--primary-color);
     }
 
-    .button-group {
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-sm);
-      margin-top: var(--spacing-md);
-    }
-
     button {
       width: 100%;
       padding: 12px;
@@ -208,39 +201,28 @@
       </select>
     </div>
 
-    <div class="button-group">
-      <button id="translate-btn">
-        <span class="button-content">
-          <span class="button-text">Translate Selection</span>
-        </span>
-      </button>
-      <button id="translate-all-btn">
-        <span class="button-content">
-          <span class="button-text">Translate Entire File</span>
-        </span>
-      </button>
-    </div>
+    <button id="translate-btn">
+      <span class="button-content">
+        <span class="button-text">Translate Selection</span>
+      </span>
+    </button>
 
     <div id="status" class="status-container"></div>
   </div>
 
   <script>
     const translateBtn = document.getElementById('translate-btn');
-    const translateAllBtn = document.getElementById('translate-all-btn');
     const statusDiv = document.getElementById('status');
 
     function setLoading(isLoading) {
       translateBtn.disabled = isLoading;
-      translateAllBtn.disabled = isLoading;
       
       if (isLoading) {
         translateBtn.innerHTML = '<span class="button-content"><span class="spinner"></span><span class="button-text">Translating...</span></span>';
-        translateAllBtn.innerHTML = '<span class="button-content"><span class="spinner"></span><span class="button-text">Translating...</span></span>';
         statusDiv.className = 'status-container status-loading';
         statusDiv.textContent = 'Translating your content...';
       } else {
         translateBtn.innerHTML = '<span class="button-content"><span class="button-text">Translate Selection</span></span>';
-        translateAllBtn.innerHTML = '<span class="button-content"><span class="button-text">Translate Entire File</span></span>';
       }
     }
 
@@ -253,12 +235,6 @@
       const market = document.getElementById('market').value;
       setLoading(true);
       parent.postMessage({ pluginMessage: { type: 'translate', market } }, '*');
-    };
-
-    translateAllBtn.onclick = () => {
-      const market = document.getElementById('market').value;
-      setLoading(true);
-      parent.postMessage({ pluginMessage: { type: 'translate-all', market } }, '*');
     };
 
     onmessage = (event) => {
