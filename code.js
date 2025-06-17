@@ -80,8 +80,7 @@ figma.ui.onmessage = async (msg) => {
       type: 'success',
       message: `Translation completed! Successfully translated ${successCount} layers${errorCount > 0 ? ` (${errorCount} failed)` : ''}`
     });
-  }
-  else if (msg.type === "translate") {
+  } else if (msg.type === "translate") {
     const selection = figma.currentPage.selection;
     if (selection.length === 0) {
       figma.ui.postMessage({ 
