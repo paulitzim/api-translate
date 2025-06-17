@@ -9,5 +9,9 @@
     { "name": "Translate Text", "command": "translate" }
   ],
   "editorType": ["figma"],
-  "networkAccess": { "allowedDomains": ["https://lla.com"] }
+  "networkAccess": { 
+    "allowedDomains": [
+      "https://generativelanguage.googleapis.com"
+    ] 
+  }
 }
