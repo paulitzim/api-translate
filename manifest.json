@@ -9,5 +9,5 @@
     { "name": "Translate Text", "command": "translate" }
   ],
   "editorType": ["figma"],
-  "networkAccess": { "allowedDomains": "lla.com" }
+  "networkAccess": { "allowedDomains": ["lla.com"] }
 }
