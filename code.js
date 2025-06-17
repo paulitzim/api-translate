@@ -117,7 +117,7 @@ figma.ui.onmessage = async (msg) => {
           }
 
           const data = await response.json();
-          if (data?.translatedText) {
+          if (data && data.translatedText) {
             node.characters = data.translatedText;
             successCount++;
           } else {
