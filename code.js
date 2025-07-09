@@ -1,7 +1,7 @@
 figma.showUI(__html__, { width: 320, height: 400 });
 
 // Helper function to process a single text node
-async function processTextNode(node, market) {
+async function processTextNode(node, market, action = "translate", nodeCount = 1){
   if (node.type !== "TEXT") {
     return { processed: true, success: false, error: null };
   }
@@ -46,10 +46,11 @@ async function processTextNode(node, market) {
       body: JSON.stringify({
         timestamp: new Date().toISOString(),
         market,
-        action: msg.type, // "translate" o "translate-all"
-        nodeCount: allTextNodes?.length || 1,
+        action,
+        nodeCount
       }),
     });
+
 
     // Handle other errors
     if (!response.ok) {
@@ -117,7 +118,7 @@ figma.ui.onmessage = async (msg) => {
 
     try {
       for (const node of selection) {
-        const result = await processTextNode(node, msg.market);
+        const result = await processTextNode(node, msg.market, msg.type, totalNodes);
         
         if (!result.processed) {
           if (result.error && result.error.type === 'rate-limit') {
