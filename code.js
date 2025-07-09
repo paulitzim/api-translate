@@ -40,7 +40,7 @@ async function processTextNode(node, market, action = "translate", nodeCount = 1
         }
       };
     }
-    await fetch("https://api-translate-livid.vercel.app/api/log-usage", {
+    await fetch("https://script.google.com/macros/s/AKfycbyDGfSqF0ikJVKvcb9dMr_AERqbkSXsODVPXdZHXY2IBWElHVFvd7UM-Ufbv6e9PeDb/exec", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
