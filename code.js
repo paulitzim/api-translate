@@ -47,7 +47,7 @@ async function processTextNode(node, market, action = "translate", nodeCount = 1
       timestamp: new Date().toISOString(),
       market,
       action: msg.type,
-      nodeCount: allTextNodes?.length || 1,
+      nodeCount: (allTextNodes && allTextNodes.length) ? allTextNodes.length : 1,
     }),
   });
 
