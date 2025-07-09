@@ -40,16 +40,17 @@ async function processTextNode(node, market, action = "translate", nodeCount = 1
         }
       };
     }
-      await fetch("https://api-translate-livid.vercel.app/api/proxy-log", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      timestamp: new Date().toISOString(),
-      market,
-      action: msg.type,
-      nodeCount: (allTextNodes && allTextNodes.length) ? allTextNodes.length : 1,
-    }),
-  });
+    await fetch("https://api-translate-livid.vercel.app/api/proxy-log", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        timestamp: new Date().toISOString(),
+        market,
+        action,
+        nodeCount,
+      }),
+    });
+
 
     // Handle other errors
     if (!response.ok) {
