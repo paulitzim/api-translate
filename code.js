@@ -40,6 +40,16 @@ async function processTextNode(node, market) {
         }
       };
     }
+    await fetch("https://api-translate-livid.vercel.app/api/log-usage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        timestamp: new Date().toISOString(),
+        market,
+        action: msg.type, // "translate" o "translate-all"
+        nodeCount: allTextNodes?.length || 1,
+      }),
+    });
 
     // Handle other errors
     if (!response.ok) {
