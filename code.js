@@ -7,7 +7,10 @@ async function processTextNode(node, market) {
   }
 
   try {
-    // Load font before accessing text
+    // Check if node.fontName is available and not a symbol
+    if (!node.fontName || typeof node.fontName !== "object" || node.fontName.family === "Symbol") {
+      return { processed: true, success: false, error: { message: "Font not available or is a symbol font." } };
+    }
     await figma.loadFontAsync(node.fontName);
     
     const originalText = node.characters;
