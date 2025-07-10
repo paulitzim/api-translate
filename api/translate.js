@@ -88,7 +88,7 @@ export default async function handler(req, res) {
   - Prioritize clarity, trust, and consistency.
 
   Do not translate product or brand names.
-  Do not translate the word "#checkout" to Spanish; keep it in English.
+  Do not translate the word "checkout" to Spanish; keep it in English.
   Keep the translated text concise so that it fits within ${width || 300} pixels of horizontal space.
   Return only the final translated string.
 
