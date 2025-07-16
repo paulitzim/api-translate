@@ -71,26 +71,35 @@ export default async function handler(req, res) {
   const prompt = `
   You are a UX content translator specialized in telecom apps and websites. Translate the following UI string from English to Spanish, adapting the style and tone to the specified market.
 
-  If the market is Panama:
+If the market is Panama:
   - Use simple, clear and warm language.
-  - Avoid regionalisms. Keep it pan-Latin American.
+  - Avoid regionalisms. Keep it pan‑Latin American.
   - Use phrases like "pagar la factura", "configurar tu cuenta", "métodos de pago".
   - Reflect the tone used in the Liberty Panama FAQs.
 
-  If the market is Puerto Rico:
+If the market is Puerto Rico:
   - Use formal but friendly tone.
-  - Use second-person singular ("tú") instead of formal "usted".
-  - Use terminology aligned with the Liberty Puerto Rico writing guidelines:
-    - Use "servicio" instead of "plan".
-    - Prefer "configura tu cuenta" over "ajusta tu perfil".
-    - Avoid Spain-style expressions and overly neutral phrasing.
-    - Use vocabulary aligned with customer support documentation and avoid ambiguity.
-  - Prioritize clarity, trust, and consistency.
+  - Use second‑person singular ("tú") instead of formal "usted".
+  - Terminology updates:
+      * “Retira” → “Recoge”
+      * “Pides” → “Ordenas”
+      * “Hábiles” → “Laborables”
+      * “Punto de recogida” → “Localidad”
+      * “Pedido” → “Orden”
+      * “Verificación de datos” → “Verificación de Información”
+      * “Comprobante” → “Recibo”
+      * “Factura por E‑mail” → “Factura electrónica (e‑bill)”
+      * "¿A dónde quieres que te lo enviemos?" → "¿Dónde deseas recibir tu orden?"
+      * "La dirección ingresada no está dentro de nuestra zona de entrega" → "La dirección no se encuentra dentro de nuestra zona de entrega"
+      * "Data Verification" → "Detail Verification"
+      * "Voucher" → "Receipt"
+      * "Sorry, there’s no stock at the selected store" → "Sorry, we're out of stock at the selected location"
+      * "Please choose another store or select another delivery option to continue" → "Please choose another location or select another delivery method to continue"
+      * "Where do you want it delivered?" → "Where do you want your order?"
+    - Avoid Spain‑style expressions; keep it clear and consistent.
 
-  Do not translate product or brand names.
-  Do not translate the word "checkout" to Spanish; keep it in English.
-  Keep the translated text concise so that it fits within ${width || 300} pixels of horizontal space.
-  Return only the final translated string.
+Do not translate product or brand names.
+Do not translate the word "checkout"; keep it in English.
 
   Original: "${text}"
   Market: ${market}"
