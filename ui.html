@@ -2,26 +2,12 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <style>
-    @font-face {
-      font-family: 'Roboto';
-      font-style: normal;
-      font-weight: 400;
-      src: local('Roboto'), local('Roboto-Regular');
-    }
-    @font-face {
-      font-family: 'Roboto';
-      font-style: normal;
-      font-weight: 500;
-      src: local('Roboto Medium'), local('Roboto-Medium');
-    }
-    @font-face {
-      font-family: 'Roboto';
-      font-style: normal;
-      font-weight: 700;
-      src: local('Roboto Bold'), local('Roboto-Bold');
-    }
-
+<style>
+    /* Font faces imported */
+    @font-face { font-family: 'Roboto'; font-style: normal; font-weight: 400; src: local('Roboto'), local('Roboto-Regular'); }
+    @font-face { font-family: 'Roboto'; font-style: normal; font-weight: 500; src: local('Roboto Medium'), local('Roboto-Medium'); }
+    @font-face { font-family: 'Roboto'; font-style: normal; font-weight: 700; src: local('Roboto Bold'), local('Roboto-Bold'); }
+    /* Palette & layout */
     :root {
       --primary-color: #ff4100;
       --primary-hover: #e63a00;
@@ -30,171 +16,26 @@
       --text-color: #333333;
       --border-color: #E5E5E5;
       --background-color: #FFFFFF;
-      --hover-color: #F5F5F5;
-      --text-primary: #333333;
-      --text-secondary: #666666;
-      --background-light: #f5f5f5;
-      --info-color: #0066cc;
-      --border-radius: 8px;
-      --spacing-xs: 4px;
       --spacing-sm: 8px;
       --spacing-md: 16px;
-      --spacing-lg: 24px;
+      --border-radius: 6px;
     }
-
-    body {
-      font-family: 'Roboto', sans-serif;
-      margin: 0;
-      padding: 0;
-      background: var(--background-color);
-      color: var(--text-color);
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .container {
-      padding: 16px;
-      max-width: 100%;
-      box-sizing: border-box;
-    }
-
-    .header {
-      margin-bottom: 24px;
-      text-align: center;
-    }
-
-    .title {
-      font-size: 20px;
-      font-weight: 500;
-      margin: 0 0 8px 0;
-      color: var(--primary-color);
-    }
-
-    .tagline {
-      font-size: 14px;
-      color: #666;
-      margin: 0;
-    }
-
-    .market-selector {
-      margin-bottom: 24px;
-    }
-
-    .market-selector label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 500;
-    }
-
-    .market-selector select {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      background: var(--background-color);
-      font-size: 14px;
-      color: var(--text-color);
-      cursor: pointer;
-      transition: border-color 0.2s;
-    }
-
-    .market-selector select:hover {
-      border-color: var(--primary-color);
-    }
-
-    .market-selector select:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 2px rgba(255, 65, 0, 0.1);
-    }
-
-    .button {
-      width: 100%;
-      padding: 12px;
-      background: var(--primary-color);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background-color 0.2s;
-      margin-bottom: 16px;
-    }
-
-    .button:hover {
-      background: var(--primary-hover);
-    }
-
-    .button:disabled {
-      background: #CCCCCC;
-      cursor: not-allowed;
-    }
-
-    .status {
-      margin-top: 16px;
-      padding: 12px;
-      border-radius: 6px;
-      font-size: 14px;
-      display: none;
-      word-wrap: break-word;
-      max-width: 100%;
-      box-sizing: border-box;
-    }
-
-    .status.success {
-      background: rgba(0, 168, 107, 0.1);
-      color: var(--success-color);
-      border: 1px solid var(--success-color);
-    }
-
-    .status.error {
-      background: rgba(242, 72, 34, 0.1);
-      color: var(--error-color);
-      border: 1px solid var(--error-color);
-    }
-
-    .status.rate-limit {
-      background: rgba(255, 171, 0, 0.1);
-      color: #FFAB00;
-      border: 1px solid #FFAB00;
-    }
-
-    .status.progress {
-      background: rgba(255, 65, 0, 0.1);
-      color: var(--primary-color);
-      border: 1px solid var(--primary-color);
-    }
-
-    .error-details {
-      margin-top: 8px;
-      font-size: 12px;
-      color: #666;
-      word-break: break-word;
-    }
-
-    .spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top-color: white;
-      animation: spin 1s linear infinite;
-      margin-right: 8px;
-      vertical-align: middle;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .button-content {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--spacing-sm);
-    }
+    body { font-family: 'Roboto', sans-serif; margin:0; padding:0; background: var(--background-color); color: var(--text-color); font-size:14px; }
+    .container { padding: var(--spacing-md); }
+    .header { text-align:center; margin-bottom: var(--spacing-md); }
+    .title { color: var(--primary-color); font-size:20px; margin:0; }
+    .tagline { font-size:14px; color:#666; margin:0 0 var(--spacing-md) 0; }
+    .market-selector { margin-bottom: var(--spacing-md); }
+    .market-selector select { width:100%; padding:8px; border:1px solid var(--border-color); border-radius: var(--border-radius); }
+    .button { width:100%; padding:12px; background:var(--primary-color); color:#fff; border:none; border-radius: var(--border-radius); font-size:14px; cursor:pointer; }
+    .button:disabled { background:#ccc; cursor:not-allowed; }
+    .status { display:none; margin-top: var(--spacing-md); padding:12px; border-radius: var(--border-radius); font-size:14px; word-wrap:break-word; }
+    .status.success { background:rgba(0,168,107,0.1); color:var(--success-color); border:1px solid var(--success-color); }
+    .status.error { background:rgba(242,72,34,0.1); color:var(--error-color); border:1px solid var(--error-color); }
+    .status.rate-limit { background:rgba(255,171,0,0.1); color:#FFAB00; border:1px solid #FFAB00; }
+    .status.progress { background:rgba(255,65,0,0.1); color:var(--primary-color); border:1px solid var(--primary-color); }
+    .spinner { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 1s linear infinite; margin-right:8px; vertical-align:middle; }
+    @keyframes spin { to { transform:rotate(360deg);} }
   </style>
 </head>
 <body>
@@ -202,13 +43,12 @@
     <div class="header">
       <h1 class="title">LLA UX Translator</h1>
     </div>
-
     <p class="tagline">
-      This plugin helps UX writers and designers translate interface copy from English to Spanish, adapting tone and vocabulary to specific Liberty Latin America markets like Panama or Puerto Rico.
+      This plugin helps UX designers translate interface copy from English to Spanish, adapting tone and vocabulary to specific LLA markets.
     </p>
 
     <div class="market-selector">
-      <label for="market">Choose your market:</label>
+      <label for="market">Market:</label>
       <select id="market">
         <option value="Panama">Panama</option>
         <option value="Puerto Rico">Puerto Rico</option>
@@ -217,82 +57,113 @@
 
     <button id="translate-btn" class="button">
       <span class="button-content">
+        <span class="spinner" style="display:none;"></span>
         <span class="button-text">Translate Selection</span>
       </span>
     </button>
 
     <div id="status" class="status"></div>
   </div>
+<!-- somewhere before your closing </body> -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+<script>
+  const SUPABASE_URL      = 'https://zgjgcxeduimaexmyrtpy.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnamdjeGVkdWltYWV4bXlydHB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIxNTk0MjAsImV4cCI6MjA2NzczNTQyMH0.K0icJO6aty6DDFMUlCP9tDTFQnhH8EbccY4mmVZUuK0';
+  const supabaseClient    = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+   window.addEventListener('message', async ({ data }) => {
+    const m = data.pluginMessage;
+    if (m?.type !== 'request-country-log') return;
+    // … inserción en tabla …
+    console.log('[UI] Supabase log ✔️');
+  
+    const { market, pluginVersion, userName, nodeCount } = m.payload;
+
+    // 1) figure out country
+    let country = 'Unknown';
+    try {
+      const r = await fetch('https://ipapi.co/json/');
+      country = (await r.json()).country_name || country;
+    } catch {}
+
+    // 2) write to your table
+    const { error } = await supabaseClient
+      .from('plugin_usage')
+      .insert([{
+        market,
+        user_name: userName,
+        node_count: nodeCount,
+        country
+      }]);
+
+    if (error) {
+      console.error('[UI] Supabase log error:', error);
+    } else {
+      console.log('[UI] Supabase log ✔️');
+    }
+  });
+</script>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const translateBtn = document.getElementById('translate-btn');
-      const marketSelect = document.getElementById('market');
-      const statusDiv = document.getElementById('status');
-      let isLoading = false;
+    const btn = document.getElementById('translate-btn');
+    const marketSelect = document.getElementById('market');
+    const statusDiv = document.getElementById('status');
+    let loading = false;
 
-      function setLoading(isLoading) {
-        translateBtn.disabled = isLoading;
-        if (isLoading) {
-          translateBtn.innerHTML = '<span class="button-content"><span class="spinner"></span><span class="button-text">Translating...</span></span>';
-          statusDiv.className = 'status progress';
-          statusDiv.textContent = 'Starting translation...';
-          statusDiv.style.display = 'block';
-        } else {
-          translateBtn.innerHTML = '<span class="button-content"><span class="button-text">Translate Selection</span></span>';
-        }
-      }
-
-      function showStatus(message, type = 'success', details = '') {
-        statusDiv.className = `status ${type}`;
-        statusDiv.innerHTML = message;
-        if (details) {
-          statusDiv.innerHTML += `<div class="error-details">${details}</div>`;
-        }
+    function setLoading(on) {
+      loading = on;
+      btn.disabled = on;
+      btn.querySelector('.spinner').style.display = on ? 'inline-block' : 'none';
+      btn.querySelector('.button-text').textContent = on ? 'Translating…' : 'Translate Selection';
+      if (on) {
+        statusDiv.className = 'status progress';
+        statusDiv.textContent = 'Starting translation…';
         statusDiv.style.display = 'block';
       }
+    }
 
-      translateBtn.addEventListener('click', () => {
-        if (isLoading) return;
-        
-        setLoading(true);
-        parent.postMessage({ 
-          pluginMessage: { 
-            type: 'translate',
-            market: marketSelect.value 
-          }
-        }, '*');
-      });
+    function showStatus(msg, type='success', details='') {
+      statusDiv.className = `status ${type}`;
+      statusDiv.innerHTML = msg + (details ? `<div class="error-details">${details}</div>` : '');
+      statusDiv.style.display = 'block';
+    }
 
-      window.onmessage = (event) => {
-        const message = event.data.pluginMessage;
-        if (!message) return;
-
-        switch (message.type) {
-          case 'success':
-            setLoading(false);
-            showStatus(message.message, 'success');
-            break;
-          case 'error':
-            setLoading(false);
-            showStatus(message.message, 'error');
-            break;
-          case 'rate-limit':
-            setLoading(false);
-            showStatus(
-              `Rate limit exceeded. Please try again in ${message.retryAfter} seconds.`,
-              'rate-limit'
-            );
-            break;
-          case 'progress':
-            showStatus(message.message, 'progress');
-            break;
-          case 'complete':
-            setLoading(false);
-            break;
+    btn.onclick = () => {
+      if (loading) return;
+      setLoading(true);
+      parent.postMessage({
+        pluginMessage: {
+          type: 'translate',
+          market: marketSelect.value
         }
-      };
-    });
+      }, '*');
+    };
+
+    window.onmessage = ({ data }) => {
+      const m = data.pluginMessage;
+      if (!m) return;
+      switch (m.type) {
+        case 'progress':
+          showStatus(m.message, 'progress');
+          break;
+        case 'error':
+          setLoading(false);
+          showStatus(m.message, 'error');
+          break;
+        case 'rate-limit':
+          setLoading(false);
+          showStatus(`Rate limit. Try again in ${m.retryAfter}s`, 'rate-limit');
+          break;
+        case 'complete':
+          setLoading(false);
+          break;
+        case 'success':
+          setLoading(false);
+          showStatus(m.message, 'success');
+          break;
+      }
+      
+    };
   </script>
 </body>
 </html>

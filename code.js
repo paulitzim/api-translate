@@ -1,174 +1,82 @@
-figma.showUI(__html__, { width: 320, height: 400 });
+// code.js
+figma.showUI(__html__, { width: 360, height: 480 });
 
-// Helper function to process a single text node
-async function processTextNode(node, market) {
-  if (node.type !== "TEXT") {
-    return { processed: true, success: false, error: null };
-  }
+figma.ui.onmessage = async (msg) => {
+  if (msg.type === 'translate') {
+    const { market } = msg;
+    const user = figma.currentUser;
+    const userName = user ? (user.name || user.email) : 'Unknown';
+    const nodes = figma.currentPage.selection;
+    const count = nodes.length;
 
-  try {
-    // Check if node.fontName is available and not a symbol
-    if (!node.fontName || typeof node.fontName !== "object" || node.fontName.family === "Symbol") {
-      return { processed: true, success: false, error: { message: "Font not available or is a symbol font." } };
-    }
-    await figma.loadFontAsync(node.fontName);
-    
-    const originalText = node.characters;
-    if (!originalText || originalText.trim() === "") {
-      return { processed: true, success: false, error: null };
-    }
-
-    // Make API request
-    const response = await fetch("https://api-translate-livid.vercel.app/api/translate", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
-      body: JSON.stringify({ 
-        text: originalText, 
-        market: market || "Panama" 
-      })
+    // Inicio de progreso
+    figma.ui.postMessage({
+      type: 'progress',
+      message: `Starting translation of ${count} layer${count !== 1 ? 's' : ''}...`
     });
 
-    // Handle rate limiting
-    if (response.status === 429) {
-      const data = await response.json();
-      return { 
-        processed: false, 
-        success: false, 
-        error: { 
-          type: 'rate-limit',
-          retryAfter: data.retryAfter || 60
-        }
-      };
-    }
-
-    // Handle other errors
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      return { 
-        processed: true, 
-        success: false, 
-        error: { 
-          type: 'error',
-          message: `API Error: ${errorData.message || response.statusText || 'Unknown error'}`
-        }
-      };
-    }
-
-    // Parse response
-    const data = await response.json();
-    
-    // Validate response
-    if (!data || typeof data !== 'object' || !data.translatedText || typeof data.translatedText !== 'string') {
-      return { 
-        processed: true, 
-        success: false, 
-        error: { 
-          type: 'error',
-          message: 'Invalid response from translation service'
-        }
-      };
-    }
-
-    // Store original text and update with translation
-    await node.setPluginData("originalText", originalText);
-    node.characters = data.translatedText;
-    
-    return { processed: true, success: true, error: null };
-
-  } catch (err) {
-    console.error("Translation error:", err);
-    return { 
-      processed: true, 
-      success: false, 
-      error: { 
-        type: 'error',
-        message: `Error: ${err.message || 'Unknown error occurred'}`
-      }
-    };
-  }
-}
-
-// Message handler
-figma.ui.onmessage = async (msg) => {
-  if (msg.type === "translate") {
-    const selection = figma.currentPage.selection;
-    if (selection.length === 0) {
-      figma.ui.postMessage({ 
-        type: 'error',
-        message: 'Please select at least one text layer.'
-      });
-      return;
-    }
-
-    let successCount = 0;
-    let errorCount = 0;
-    let processedCount = 0;
-    const totalNodes = selection.length;
-
-    try {
-      for (const node of selection) {
-        const result = await processTextNode(node, msg.market);
-        
-        if (!result.processed) {
-          if (result.error && result.error.type === 'rate-limit') {
-            figma.ui.postMessage({ 
-              type: 'rate-limit',
-              retryAfter: result.error.retryAfter
-            });
-            return;
+    for (let i = 0; i < count; i++) {
+      const node = nodes[i];
+      if (node.type === 'TEXT') {
+        try {
+          // 1) Llamada a la API con validación de error
+          const res = await fetch('https://api-translate-livid.vercel.app/api/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: node.characters, market })
+          });
+          if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(`API error ${res.status}: ${errText}`);
           }
-          continue;
-        }
+          const { translatedText } = await res.json();
 
-        processedCount++;
-        
-        if (result.success) {
-          successCount++;
-        } else if (result.error) {
-          errorCount++;
-          figma.ui.postMessage({ 
+          // 2) Carga de todas las fuentes usadas en el nodo
+          const fontNames = [];
+          for (let j = 0; j < node.characters.length; j++) {
+            const font = node.getRangeFontName(j, j + 1);
+            if (typeof font !== 'symbol') {
+              const { family, style } = font;
+              if (!fontNames.some(f => f.family === family && f.style === style)) {
+                fontNames.push(font);
+              }
+            }
+          }
+          await Promise.all(fontNames.map(f => figma.loadFontAsync(f)));
+
+          // 3) Asignación del texto traducido
+          node.setPluginData('originalText', node.characters);
+          node.characters = translatedText || node.characters;
+
+          figma.ui.postMessage({
+            type: 'progress',
+            message: `Processed ${i + 1}/${count}`
+          });
+        } catch (error) {
+          figma.ui.postMessage({
             type: 'error',
-            message: result.error.message
+            message: `Failed ${i + 1}/${count}: ${error.message}`
           });
         }
-
-        // Send progress update
-        figma.ui.postMessage({ 
-          type: 'progress',
-          message: `Processed ${processedCount} of ${totalNodes} layers`
-        });
       }
-
-      // Send completion message
-      figma.ui.postMessage({ type: 'complete' });
-
-      // Send final status
-      if (successCount > 0) {
-        figma.ui.postMessage({ 
-          type: 'success',
-          message: `Successfully translated ${successCount} layer${successCount > 1 ? 's' : ''}`
-        });
-      } else if (errorCount > 0) {
-        figma.ui.postMessage({ 
-          type: 'error',
-          message: `Failed to translate ${errorCount} layer${errorCount > 1 ? 's' : ''}`
-        });
-      } else {
-        figma.ui.postMessage({ 
-          type: 'error',
-          message: 'No text layers were found to translate.'
-        });
-      }
-    } catch (err) {
-      console.error("Translation error:", err);
-      figma.ui.postMessage({ type: 'complete' });
-      figma.ui.postMessage({ 
-        type: 'error',
-        message: `Error: ${err.message || 'Unknown error occurred'}`
-      });
     }
+
+    // Finalización
+    figma.ui.postMessage({ type: 'complete' });
+    figma.ui.postMessage({
+      type: 'success',
+      message: `${count} layer${count !== 1 ? 's' : ''} translated`
+    });
+
+    // Log de uso
+    figma.ui.postMessage({
+      type: 'request-country-log',
+      payload: {
+        market,
+        pluginVersion: `${figma.pluginId}@${figma.command}`,
+        userName,
+        nodeCount: count
+      }
+    });
   }
 };
